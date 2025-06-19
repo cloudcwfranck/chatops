@@ -10,6 +10,14 @@ The CLI is built with [Typer](https://typer.tiangolo.com/). After installing the
 python -m chatops
 ```
 
+### Rollback Deployments
+
+To rollback to the last successful deployment for an app and environment:
+
+```bash
+python -m chatops deploy rollback APP ENV
+```
+
 ### Folder Structure
 
 ```
