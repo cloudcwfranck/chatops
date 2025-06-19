@@ -10,6 +10,18 @@ The CLI is built with [Typer](https://typer.tiangolo.com/). After installing the
 python -m chatops
 ```
 
+### Suggest a CLI Command
+
+The package exposes a helper function `suggest_command` that uses OpenAI
+embeddings to map a natural language request to the most relevant ChatOps
+CLI command:
+
+```python
+from chatops import suggest_command
+
+cmd = suggest_command("restart app on prod")
+print(cmd)  # -> "deploy deploy APP ENV" or similar
+=======
 ### IAM Checks
 
 To list IAM users and highlight those with admin-level permissions:
