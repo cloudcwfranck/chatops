@@ -48,7 +48,13 @@ chatops/
 │   ├── deploy.py
 │   ├── incident.py
 │   ├── logs.py
-│   ├── iam.py
-│   └── security.py
 └── README.md
+```
+
+### Latest CVEs
+
+To display recent high or critical vulnerabilities published in the last week:
+
+```bash
+python -m chatops cve latest
 ```
