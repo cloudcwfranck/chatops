@@ -18,6 +18,16 @@ To rollback to the last successful deployment for an app and environment:
 python -m chatops deploy rollback APP ENV
 ```
 
+### Fetch AWS Logs
+
+Retrieve recent log events from AWS CloudWatch:
+
+```bash
+python -m chatops logs aws SERVICE --log-group LOG_GROUP --log-stream LOG_STREAM
+```
+
+If the log group or stream are not provided, the CLI will prompt for them interactively.
+
 ### Folder Structure
 
 ```

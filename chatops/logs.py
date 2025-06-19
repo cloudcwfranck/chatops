@@ -1,3 +1,6 @@
+import boto3
+from rich.console import Console
+from rich.syntax import Syntax
 import typer
 from azure.identity import AzureCliCredential
 from azure.monitor.query import LogsQueryClient
@@ -11,28 +14,30 @@ def show(tail: int = 10):
     """Show recent logs."""
     typer.echo(f"Showing last {tail} log entries")
 
-
-@app.command()
-def azure(
-    workspace_id: str = typer.Argument(..., help="Log Analytics workspace ID"),
-    query: str = typer.Argument(..., help="Kusto query to run"),
+@app.command("aws")
+def aws_logs(
+    service: str = typer.Argument(..., help="Service identifier"),
+    log_group: str = typer.Option(None, "--log-group", "-g", help="CloudWatch log group"),
+    log_stream: str = typer.Option(
+        None, "--log-stream", "-s", help="CloudWatch log stream"
+    ),
 ):
-    """Run a Kusto query against Azure Monitor Logs."""
-    credential = AzureCliCredential()
-    client = LogsQueryClient(credential)
+    """Fetch the latest 50 log events from AWS CloudWatch Logs."""
 
-    response = client.query_workspace(workspace_id, query)
+    if not log_group:
+        log_group = typer.prompt("Log group name")
+    if not log_stream:
+        log_stream = typer.prompt("Log stream name")
 
-    if not response.tables:
-        typer.echo("No results")
-        raise typer.Exit()
+    client = boto3.client("logs")
+    response = client.get_log_events(
+        logGroupName=log_group,
+        logStreamName=log_stream,
+        limit=50,
+        startFromHead=False,
+    )
 
-    table = Table(title="Query Results")
-    first_table = response.tables[0]
-    for column in first_table.columns:
-        table.add_column(column.name)
-
-    for row in first_table.rows:
-        table.add_row(*[str(item) for item in row])
-
-    Console().print(table)
+    console = Console()
+    console.print(f"[bold]Service:[/] {service}")
+    for event in response.get("events", []):
+        console.print(Syntax(event.get("message", ""), "bash", theme="ansi_dark"))
