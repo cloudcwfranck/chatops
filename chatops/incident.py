@@ -6,28 +6,35 @@ app = typer.Typer(help="Incident management commands")
 
 @app.command()
 def list():
-    """List current incidents."""
-    typer.echo("No active incidents")
-
-
-@app.command()
-def create():
-    """Create a new incident using a dummy ITSM API."""
-    title = typer.prompt("Title")
-    severity = typer.prompt("Severity")
-    service = typer.prompt("Affected service")
-
-    api_url = os.environ.get("ITSM_API_URL", "https://httpbin.org/post")
-    body = {"title": title, "severity": severity, "service": service}
-
-    try:
-        resp = requests.post(api_url, json=body, timeout=5)
-    except requests.RequestException as exc:
-        typer.echo(f"Request failed: {exc}")
+    """List open incidents with severity and time opened."""
+    base_url = os.environ.get("INCIDENT_API_URL")
+    token = os.environ.get("INCIDENT_API_TOKEN")
+    if not base_url or not token:
+        typer.echo("INCIDENT_API_URL and INCIDENT_API_TOKEN must be set")
         raise typer.Exit(code=1)
 
-    if resp.status_code in {200, 201, 202}:
-        typer.echo("Incident created")
-    else:
-        typer.echo(f"Failed to create incident: {resp.status_code} {resp.text}")
+    url = f"{base_url.rstrip('/')}/incidents?status=open"
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    resp = requests.get(url, headers=headers)
+    if resp.status_code != 200:
+        typer.echo(f"Failed to fetch incidents: {resp.status_code} {resp.text}")
         raise typer.Exit(code=1)
+
+    incidents = resp.json()
+    if not incidents:
+        typer.echo("No open incidents")
+        raise typer.Exit()
+
+    for incident in incidents:
+        severity = incident.get("severity", "unknown")
+        opened = incident.get("created_at") or incident.get("start_time")
+        if opened:
+            try:
+                dt = datetime.fromisoformat(opened.replace("Z", "+00:00"))
+                opened = dt.strftime("%Y-%m-%d %H:%M:%S")
+            except Exception:
+                pass
+        else:
+            opened = "unknown"
+
+        typer.echo(f"[{severity}] {opened}")
