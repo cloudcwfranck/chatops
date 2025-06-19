@@ -10,6 +10,14 @@ The CLI is built with [Typer](https://typer.tiangolo.com/). After installing the
 python -m chatops
 ```
 
+### IAM Checks
+
+To list IAM users and highlight those with admin-level permissions:
+
+```bash
+python -m chatops iam check
+```
+
 ### Rollback Deployments
 
 To rollback to the last successful deployment for an app and environment:
@@ -17,6 +25,16 @@ To rollback to the last successful deployment for an app and environment:
 ```bash
 python -m chatops deploy rollback APP ENV
 ```
+
+### Fetch AWS Logs
+
+Retrieve recent log events from AWS CloudWatch:
+
+```bash
+python -m chatops logs aws SERVICE --log-group LOG_GROUP --log-stream LOG_STREAM
+```
+
+If the log group or stream are not provided, the CLI will prompt for them interactively.
 
 ### Folder Structure
 
@@ -30,8 +48,6 @@ chatops/
 │   ├── deploy.py
 │   ├── incident.py
 │   ├── logs.py
-│   ├── security.py
-│   └── cve.py
 └── README.md
 ```
 
