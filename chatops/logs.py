@@ -2,6 +2,10 @@ import boto3
 from rich.console import Console
 from rich.syntax import Syntax
 import typer
+from azure.identity import AzureCliCredential
+from azure.monitor.query import LogsQueryClient
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(help="Logging related commands")
 
@@ -9,7 +13,6 @@ app = typer.Typer(help="Logging related commands")
 def show(tail: int = 10):
     """Show recent logs."""
     typer.echo(f"Showing last {tail} log entries")
-
 
 @app.command("aws")
 def aws_logs(
