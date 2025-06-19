@@ -1,10 +1,24 @@
-# chatops
+# chatops-toolkit
 
-Chat for Operations teams
+A command line toolkit for operations teams built with [Typer](https://typer.tiangolo.com/).
 
-## CLI Usage
+## Installation
 
-The CLI is built with [Typer](https://typer.tiangolo.com/). After installing the dependencies you can run the application with:
+Install from PyPI:
+
+```bash
+pip install chatops-toolkit
+```
+
+## Usage
+
+Invoke the CLI with the installed entry point:
+
+```bash
+chatops-toolkit
+```
+
+You can also run the package directly:
 
 ```bash
 python -m chatops
@@ -12,58 +26,18 @@ python -m chatops
 
 ### Suggest a CLI Command
 
-The package exposes a helper function `suggest_command` that uses OpenAI
-embeddings to map a natural language request to the most relevant ChatOps
-CLI command:
+The package exposes `suggest_command` to map natural language requests to a CLI command:
 
 ```python
 from chatops import suggest_command
 
 cmd = suggest_command("restart app on prod")
-print(cmd)  # -> "deploy deploy APP ENV" or similar
-=======
-### IAM Checks
-
-To list IAM users and highlight those with admin-level permissions:
-
-```bash
-python -m chatops iam check
-```
-
-### Rollback Deployments
-
-To rollback to the last successful deployment for an app and environment:
-
-```bash
-python -m chatops deploy rollback APP ENV
-```
-
-### List Open Incidents
-
-To show currently open incidents:
-
-```bash
-python -m chatops incident list
-```
-
-### Folder Structure
-
-```
-chatops/
-├── chatops/            # Python package
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py
-│   ├── cost.py
-│   ├── deploy.py
-│   ├── incident.py
-│   ├── logs.py
-└── README.md
+print(cmd)
 ```
 
 ### Latest CVEs
 
-To display recent high or critical vulnerabilities published in the last week:
+Display high or critical CVEs published in the last week:
 
 ```bash
 python -m chatops cve latest
