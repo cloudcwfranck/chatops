@@ -10,6 +10,14 @@ The CLI is built with [Typer](https://typer.tiangolo.com/). After installing the
 python -m chatops
 ```
 
+### IAM Checks
+
+To list IAM users and highlight those with admin-level permissions:
+
+```bash
+python -m chatops iam check
+```
+
 ### Rollback Deployments
 
 To rollback to the last successful deployment for an app and environment:
@@ -40,6 +48,7 @@ chatops/
 │   ├── deploy.py
 │   ├── incident.py
 │   ├── logs.py
+│   ├── iam.py
 │   └── security.py
 └── README.md
 ```
