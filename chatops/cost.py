@@ -2,42 +2,41 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 import typer
-from rich.console import Console
-from rich.table import Table
+from azure.identity import AzureCliCredential
+from azure.mgmt.costmanagement import CostManagementClient
+
 
 app = typer.Typer(help="Cost management commands")
+report_app = typer.Typer(help="Generate cost reports")
+app.add_typer(report_app, name="report")
 
-@app.command()
-def report():
-    """Generate AWS cost report for the last 7 days by service."""
-    # Determine date range for the last 7 complete days. The Cost Explorer API
-    # expects the end date to be exclusive, so we use today as the end and
-    # subtract seven days for the start.
-    end = datetime.now(tz=timezone.utc).date()
-    start = end - timedelta(days=7)
 
-    client = boto3.client("ce")
+@report_app.command("azure")
+def azure_cost(subscription_id: str = typer.Argument(..., help="Azure subscription ID")):
+    """Show Azure cost by service for the current month."""
+    credential = AzureCliCredential()
+    client = CostManagementClient(credential)
+    scope = f"/subscriptions/{subscription_id}"
 
-    response = client.get_cost_and_usage(
-        TimePeriod={"Start": start.strftime("%Y-%m-%d"), "End": end.strftime("%Y-%m-%d")},
-        Granularity="DAILY",
-        Metrics=["UnblendedCost"],
-        GroupBy=[{"Type": "DIMENSION", "Key": "SERVICE"}],
-    )
+    query = {
+        "type": "Usage",
+        "timeframe": "MonthToDate",
+        "dataset": {
+            "granularity": "None",
+            "aggregation": {"totalCost": {"name": "PreTaxCost", "function": "Sum"}},
+            "grouping": [{"type": "Dimension", "name": "ServiceName"}],
+        },
+    }
 
-    # Aggregate costs by service across the returned days
-    totals: dict[str, float] = {}
-    for day in response.get("ResultsByTime", []):
-        for group in day.get("Groups", []):
-            service = group["Keys"][0]
-            cost = float(group["Metrics"]["UnblendedCost"]["Amount"])
-            totals[service] = totals.get(service, 0.0) + cost
+    result = client.query.usage(scope, query)
 
-    table = Table(title=f"AWS Cost by Service ({start} to {end - timedelta(days=1)})")
+    table = Table(title="Azure Cost by Service (Month To Date)")
     table.add_column("Service", style="cyan")
-    table.add_column("USD", justify="right", style="green")
+    table.add_column("Cost", justify="right")
 
-    for service, cost in sorted(totals.items(), key=lambda x: x[1], reverse=True):
-        table.add_row(service, f"{cost:.2f}")
+    for row in result.rows:
+        service, cost = row
+        table.add_row(str(service), f"${cost:.2f}")
+
 
     Console().print(table)
