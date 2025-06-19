@@ -18,6 +18,14 @@ To rollback to the last successful deployment for an app and environment:
 python -m chatops deploy rollback APP ENV
 ```
 
+### List Open Incidents
+
+To show currently open incidents:
+
+```bash
+python -m chatops incident list
+```
+
 ### Folder Structure
 
 ```
