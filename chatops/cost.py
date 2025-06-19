@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta, timezone
+
+import boto3
 import typer
 from azure.identity import AzureCliCredential
 from azure.mgmt.costmanagement import CostManagementClient
-from rich.console import Console
-from rich.table import Table
+
 
 app = typer.Typer(help="Cost management commands")
 report_app = typer.Typer(help="Generate cost reports")
@@ -35,5 +37,6 @@ def azure_cost(subscription_id: str = typer.Argument(..., help="Azure subscripti
     for row in result.rows:
         service, cost = row
         table.add_row(str(service), f"${cost:.2f}")
+
 
     Console().print(table)
