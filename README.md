@@ -21,6 +21,13 @@ from chatops import suggest_command
 
 cmd = suggest_command("restart app on prod")
 print(cmd)  # -> "deploy deploy APP ENV" or similar
+=======
+### IAM Checks
+
+To list IAM users and highlight those with admin-level permissions:
+
+```bash
+python -m chatops iam check
 ```
 
 ### Rollback Deployments
@@ -29,6 +36,14 @@ To rollback to the last successful deployment for an app and environment:
 
 ```bash
 python -m chatops deploy rollback APP ENV
+```
+
+### List Open Incidents
+
+To show currently open incidents:
+
+```bash
+python -m chatops incident list
 ```
 
 ### Folder Structure
@@ -43,6 +58,13 @@ chatops/
 │   ├── deploy.py
 │   ├── incident.py
 │   ├── logs.py
-│   └── security.py
 └── README.md
+```
+
+### Latest CVEs
+
+To display recent high or critical vulnerabilities published in the last week:
+
+```bash
+python -m chatops cve latest
 ```
