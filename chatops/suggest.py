@@ -70,3 +70,36 @@ def suggest_command(user_query: str) -> str:
 
     best_cmd = max(commands, key=lambda pair: _cosine_similarity(query_emb, pair[1]))
     return best_cmd[0]
+
+import typer
+from rich.console import Console
+from .utils import log_command, time_command
+
+app = typer.Typer(help="AI powered helpers")
+
+
+@time_command
+@log_command
+@app.command()
+def suggest(prompt: str):
+    """Suggest best ChatOps command."""
+    try:
+        cmd = suggest_command(prompt)
+    except Exception as exc:
+        Console().print(f"Error: {exc}")
+        raise typer.Exit(1)
+    Console().print(cmd)
+
+
+@time_command
+@log_command
+@app.command()
+def explain(text: str):
+    """Use OpenAI to explain an error message."""
+    try:
+        client = _get_client()
+        resp = client.chat.completions.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": text}])
+        Console().print(resp.choices[0].message.content)
+    except Exception as exc:
+        Console().print(f"OpenAI error: {exc}")
+        raise typer.Exit(1)

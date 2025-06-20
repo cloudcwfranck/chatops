@@ -1,46 +1,48 @@
-from rich.console import Console
-from rich.syntax import Syntax
+from __future__ import annotations
+import time
 import typer
-
+from rich.console import Console
 from rich.table import Table
+from rich.live import Live
+from .utils import log_command, time_command
 
 app = typer.Typer(help="Logging related commands")
 
+
+@time_command
+@log_command
 @app.command()
-def show(tail: int = 10):
-    """Show recent logs."""
-    typer.echo(f"Showing last {tail} log entries")
-
-@app.command("aws")
-def aws_logs(
-    service: str = typer.Argument(..., help="Service identifier"),
-    log_group: str = typer.Option(None, "--log-group", "-g", help="CloudWatch log group"),
-    log_stream: str = typer.Option(
-        None, "--log-stream", "-s", help="CloudWatch log stream"
-    ),
-):
-    """Fetch the latest 50 log events from AWS CloudWatch Logs."""
-
-    try:
-        import boto3  # type: ignore
-    except ImportError:
-        typer.echo("boto3 is required for this command")
-        raise typer.Exit(code=1)
-
-    if not log_group:
-        log_group = typer.prompt("Log group name")
-    if not log_stream:
-        log_stream = typer.prompt("Log stream name")
-
-    client = boto3.client("logs")
-    response = client.get_log_events(
-        logGroupName=log_group,
-        logStreamName=log_stream,
-        limit=50,
-        startFromHead=False,
-    )
-
+def live(service: str):
+    """Simulate live logs for a service."""
     console = Console()
-    console.print(f"[bold]Service:[/] {service}")
-    for event in response.get("events", []):
-        console.print(Syntax(event.get("message", ""), "bash", theme="ansi_dark"))
+    with Live(refresh_per_second=4) as live:
+        for i in range(5):
+            live.update(Table().add_column("log").add_row(f"{service} log line {i}"))
+            time.sleep(0.5)
+    console.print("[green]Streaming ended[/green]")
+
+
+@time_command
+@log_command
+@app.command()
+def grep(pattern: str):
+    """Search mock logs."""
+    logs = ["error starting service", "service ready", "warning: high memory"]
+    matches = [l for l in logs if pattern in l]
+    table = Table(title="Matches")
+    table.add_column("Line")
+    for m in matches:
+        table.add_row(m)
+    Console().print(table)
+
+
+@time_command
+@log_command
+@app.command()
+def tail(service: str, lines: int = typer.Option(50, "--lines")):
+    """Tail fake log output."""
+    table = Table(title=f"{service} logs")
+    table.add_column("Line")
+    for i in range(lines):
+        table.add_row(f"log line {i}")
+    Console().print(table)

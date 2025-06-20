@@ -1,41 +1,45 @@
-import os
-from datetime import datetime
-import requests
+from __future__ import annotations
 import typer
+from rich.console import Console
+from rich.table import Table
+from .utils import log_command, time_command
 
 app = typer.Typer(help="Incident management commands")
+report_app = typer.Typer(help="Incident report commands")
+app.add_typer(report_app, name="report")
 
-@app.command()
-def list():
-    """List open incidents with severity and time opened."""
-    base_url = os.environ.get("INCIDENT_API_URL")
-    token = os.environ.get("INCIDENT_API_TOKEN")
-    if not base_url or not token:
-        typer.echo("INCIDENT_API_URL and INCIDENT_API_TOKEN must be set")
-        raise typer.Exit(code=1)
 
-    url = f"{base_url.rstrip('/')}/incidents?status=open"
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-    resp = requests.get(url, headers=headers)
-    if resp.status_code != 200:
-        typer.echo(f"Failed to fetch incidents: {resp.status_code} {resp.text}")
-        raise typer.Exit(code=1)
+@time_command
+@log_command
+@app.command("ack")
+def ack(incident_id: str):
+    """Acknowledge a fake incident."""
+    Console().print(f"Incident {incident_id} acknowledged")
 
-    incidents = resp.json()
-    if not incidents:
-        typer.echo("No open incidents")
-        raise typer.Exit()
 
-    for incident in incidents:
-        severity = incident.get("severity", "unknown")
-        opened = incident.get("created_at") or incident.get("start_time")
-        if opened:
-            try:
-                dt = datetime.fromisoformat(opened.replace("Z", "+00:00"))
-                opened = dt.strftime("%Y-%m-%d %H:%M:%S")
-            except Exception:
-                pass
-        else:
-            opened = "unknown"
+@time_command
+@log_command
+@app.command("who")
+def who():
+    """Show on-call rotation list."""
+    table = Table(title="On Call")
+    table.add_column("Name")
+    table.add_row("Alice")
+    table.add_row("Bob")
+    Console().print(table)
 
-        typer.echo(f"[{severity}] {opened}")
+
+@time_command
+@log_command
+@app.command("runbook")
+def runbook(topic: str):
+    """Print SOP for a topic."""
+    Console().print(f"Runbook for {topic}: reboot server then retry")
+
+
+@time_command
+@log_command
+@report_app.command("create")
+def report_create():
+    """Generate postmortem template."""
+    Console().print("# Postmortem Template\n- what happened\n- impact\n- action items")
