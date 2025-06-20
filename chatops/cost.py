@@ -56,7 +56,7 @@ def azure_cost(subscription_id: str = typer.Argument(..., help="Azure subscripti
     table.add_column("Cost", justify="right")
 
     for row in result.rows:
-        service, cost = row
+        cost, service, *_ = row
         table.add_row(str(service), f"${cost:.2f}")
 
 
