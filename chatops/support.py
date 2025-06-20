@@ -10,9 +10,6 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     openai = None
 
-app = typer.Typer(help="Interactive support assistant")
-
-
 def _client(console: Console | None = None) -> 'openai.OpenAI':
     """Return an OpenAI client after ensuring an API key is available."""
     return openai_client(console)
@@ -20,8 +17,7 @@ def _client(console: Console | None = None) -> 'openai.OpenAI':
 
 @time_command
 @log_command
-@app.command()
-def support():
+def support() -> None:
     """Launch an interactive DevOps assistant."""
     console = Console()
     try:
@@ -54,3 +50,4 @@ def support():
         except Exception as exc:
             console.print(f"[red]Error: {exc}[/red]")
     console.print("[green]Goodbye![/green]")
+

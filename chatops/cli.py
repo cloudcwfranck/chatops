@@ -10,7 +10,17 @@ app.add_typer(iam.app, name="iam")
 app.add_typer(incident.app, name="incident")
 app.add_typer(security.app, name="security")
 app.add_typer(cve.app, name="cve")
-app.add_typer(suggest.app, name="suggest")
 app.add_typer(explain.app, name="explain")
 app.add_typer(monitor.app, name="monitor")
-app.add_typer(support.app, name="support")
+
+
+@app.command("suggest")
+def suggest_cmd(prompt: str) -> None:
+    """Suggest best ChatOps command."""
+    suggest.suggest(prompt)
+
+
+@app.command("support")
+def support_cmd() -> None:
+    """Launch the interactive support assistant."""
+    support.support()

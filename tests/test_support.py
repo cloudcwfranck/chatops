@@ -2,6 +2,7 @@ import os
 from types import ModuleType
 from typer.testing import CliRunner
 import typer
+import os
 
 import chatops.support as support
 import chatops.openai_utils as openai_utils
@@ -72,7 +73,7 @@ def test_support_command(monkeypatch, tmp_path):
     monkeypatch.setattr(support, "Markdown", lambda x: x)
 
     runner = CliRunner()
-    result = runner.invoke(cli.app, ["support", "support"])
+    result = runner.invoke(cli.app, ["support"])
 
     assert result.exit_code == 0
     assert "Goodbye!" in output[-1]
