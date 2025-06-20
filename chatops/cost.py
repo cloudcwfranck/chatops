@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 import typer
-from azure.identity import AzureCliCredential
-from azure.mgmt.costmanagement import CostManagementClient
+
 from rich.console import Console
 from rich.table import Table
 
@@ -15,6 +14,13 @@ app.add_typer(report_app, name="report")
 @report_app.command("azure")
 def azure_cost(subscription_id: str = typer.Argument(..., help="Azure subscription ID")):
     """Show Azure cost by service for the current month."""
+    try:
+        from azure.identity import AzureCliCredential  # type: ignore
+        from azure.mgmt.costmanagement import CostManagementClient  # type: ignore
+    except ImportError:
+        typer.echo("Azure SDK packages are required for this command")
+        raise typer.Exit(code=1)
+
     credential = AzureCliCredential()
     client = CostManagementClient(credential)
     scope = f"/subscriptions/{subscription_id}"
