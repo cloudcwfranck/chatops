@@ -89,7 +89,7 @@ Both forms expose the same set of subcommands:
 - `monitor latency [--threshold MS]` &ndash; simulate latency alert
 
 #### support
-- `support support` &ndash; launch interactive assistant
+- `support support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
 
 ### Example commands
 
