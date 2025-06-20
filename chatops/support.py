@@ -1,9 +1,9 @@
 from __future__ import annotations
-import os
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
 from .utils import log_command, time_command
+from .openai_utils import openai_client
 
 try:
     import openai
@@ -13,19 +13,9 @@ except Exception:  # pragma: no cover - optional dependency
 app = typer.Typer(help="Interactive support assistant")
 
 
-def _client() -> 'openai.OpenAI':
-    if openai is None:
-        raise RuntimeError("openai package not installed")
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        # Prompt the user for an API key if not already set
-        api_key = typer.prompt(
-            "Enter your OpenAI API key", hide_input=True
-        )
-        if not api_key:
-            raise RuntimeError("OPENAI_API_KEY not provided")
-        os.environ["OPENAI_API_KEY"] = api_key
-    return openai.OpenAI(api_key=api_key)
+def _client(console: Console | None = None) -> 'openai.OpenAI':
+    """Return an OpenAI client after ensuring an API key is available."""
+    return openai_client(console)
 
 
 @time_command
@@ -35,7 +25,7 @@ def support():
     """Launch an interactive DevOps assistant."""
     console = Console()
     try:
-        client = _client()
+        client = _client(console)
     except Exception as exc:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(1)

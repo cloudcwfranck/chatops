@@ -4,6 +4,7 @@ from typer.testing import CliRunner
 import typer
 
 import chatops.support as support
+import chatops.openai_utils as openai_utils
 from chatops import cli
 
 class DummyClient:
@@ -14,17 +15,19 @@ openai_stub = ModuleType("openai")
 openai_stub.OpenAI = DummyClient
 
 
-def test_client_prompts_for_api_key(monkeypatch):
+def test_client_prompts_for_api_key(monkeypatch, tmp_path):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.setattr(typer, "prompt", lambda text, hide_input=True: "testkey")
-    monkeypatch.setattr(support, "openai", openai_stub)
+    monkeypatch.setattr(openai_utils, "openai", openai_stub)
+    monkeypatch.setattr(openai_utils.Path, "home", lambda: tmp_path)
     client = support._client()
     assert isinstance(client, DummyClient)
     assert client.api_key == "testkey"
     assert os.environ["OPENAI_API_KEY"] == "testkey"
+    assert (tmp_path / ".openai_key").read_text() == "testkey"
 
 
-def test_support_command(monkeypatch):
+def test_support_command(monkeypatch, tmp_path):
     """Support CLI should prompt for API key and run once provided."""
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
 
@@ -48,7 +51,8 @@ def test_support_command(monkeypatch):
             self.chat = DummyChat()
 
     openai_stub.OpenAI = DummyClientFull
-    monkeypatch.setattr(support, "openai", openai_stub)
+    monkeypatch.setattr(openai_utils, "openai", openai_stub)
+    monkeypatch.setattr(openai_utils.Path, "home", lambda: tmp_path)
 
     # Provide API key when prompted
     monkeypatch.setattr(typer, "prompt", lambda text, hide_input=True: "testkey")

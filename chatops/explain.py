@@ -3,6 +3,7 @@ import os
 import typer
 from rich.console import Console
 from .utils import log_command, time_command
+from .openai_utils import ensure_api_key
 
 try:
     import openai
@@ -15,10 +16,8 @@ app = typer.Typer(help="AI assistance")
 def _client() -> 'openai.OpenAI':
     if openai is None:
         raise RuntimeError("openai package not installed")
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY not set")
-    return openai.OpenAI(api_key=api_key)
+    ensure_api_key()
+    return openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 @time_command
