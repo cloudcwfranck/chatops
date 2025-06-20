@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, timezone
 
-import boto3
 import typer
 from azure.identity import AzureCliCredential
 from azure.mgmt.costmanagement import CostManagementClient
+from rich.console import Console
+from rich.table import Table
 
 
 app = typer.Typer(help="Cost management commands")

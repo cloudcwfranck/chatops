@@ -1,10 +1,7 @@
-import boto3
 from rich.console import Console
 from rich.syntax import Syntax
 import typer
-from azure.identity import AzureCliCredential
-from azure.monitor.query import LogsQueryClient
-from rich.console import Console
+
 from rich.table import Table
 
 app = typer.Typer(help="Logging related commands")
@@ -23,6 +20,12 @@ def aws_logs(
     ),
 ):
     """Fetch the latest 50 log events from AWS CloudWatch Logs."""
+
+    try:
+        import boto3  # type: ignore
+    except ImportError:
+        typer.echo("boto3 is required for this command")
+        raise typer.Exit(code=1)
 
     if not log_group:
         log_group = typer.prompt("Log group name")
