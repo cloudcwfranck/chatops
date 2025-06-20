@@ -7,7 +7,7 @@ A command line toolkit for operations teams built with [Typer](https://typer.tia
 Install from PyPI:
 
 ```bash
-pip install chatops-toolkit
+pip install chatops
 ```
 
 ## Usage
