@@ -1,6 +1,5 @@
 from typing import Dict, Any
 
-import boto3
 from rich.console import Console
 from rich.table import Table
 import typer
@@ -27,6 +26,12 @@ def _policy_allows_admin(policy: Dict[str, Any]) -> bool:
 @app.command()
 def check():
     """List IAM users and highlight those with admin-level permissions."""
+    try:
+        import boto3  # type: ignore
+    except ImportError:
+        typer.echo("boto3 is required for this command")
+        raise typer.Exit(code=1)
+
     iam = boto3.client("iam")
     console = Console()
     table = Table(title="IAM Users", show_header=True, header_style="bold magenta")
