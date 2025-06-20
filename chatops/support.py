@@ -18,7 +18,13 @@ def _client() -> 'openai.OpenAI':
         raise RuntimeError("openai package not installed")
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENAI_API_KEY not set")
+        # Prompt the user for an API key if not already set
+        api_key = typer.prompt(
+            "Enter your OpenAI API key", hide_input=True
+        )
+        if not api_key:
+            raise RuntimeError("OPENAI_API_KEY not provided")
+        os.environ["OPENAI_API_KEY"] = api_key
     return openai.OpenAI(api_key=api_key)
 
 
