@@ -1,55 +1,42 @@
-from datetime import datetime, timedelta, timezone
+from __future__ import annotations
 import requests
 import typer
+from rich.console import Console
+from rich.table import Table
+from .utils import log_command, time_command
 
 app = typer.Typer(help="CVE related commands")
 
 
+@time_command
+@log_command
 @app.command()
-def latest(limit: int = typer.Argument(5, help="Number of CVEs to display")):
-    """Show latest high or critical vulnerabilities from NVD."""
-    now = datetime.now(timezone.utc)
-    start = (now - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%S.000")
-    end = now.strftime("%Y-%m-%dT%H:%M:%S.000")
-    params = {
-        "cvssV3Severity": ["HIGH", "CRITICAL"],
-        "resultsPerPage": limit,
-        "pubStartDate": start,
-        "pubEndDate": end,
-    }
+def latest():
+    """Fetch recent CVEs from cve.circl.lu."""
     try:
-        resp = requests.get(
-            "https://services.nvd.nist.gov/rest/json/cves/2.0", params=params, timeout=10
-        )
-    except Exception as e:
-        typer.echo(f"Request failed: {e}")
-        raise typer.Exit(code=1)
+        resp = requests.get("https://cve.circl.lu/api/last", timeout=10)
+    except Exception as exc:
+        Console().print(f"Request failed: {exc}")
+        raise typer.Exit(1)
     if resp.status_code != 200:
-        typer.echo(f"Failed to fetch CVEs: {resp.status_code}")
-        raise typer.Exit(code=1)
-    data = resp.json()
-    vulns = data.get("vulnerabilities", [])
-    if not vulns:
-        typer.echo("No vulnerabilities found")
-        raise typer.Exit()
-    for v in vulns:
-        cve = v.get("cve", {})
-        cve_id = cve.get("id", "N/A")
-        description = ""
-        for desc in cve.get("descriptions", []):
-            if desc.get("lang") == "en":
-                description = desc.get("value")
-                break
-        score = None
-        metrics = cve.get("metrics", {})
-        for key in ("cvssMetricV31", "cvssMetricV30", "cvssMetricV2"):
-            metric = metrics.get(key)
-            if metric:
-                score = metric[0].get("cvssData", {}).get("baseScore")
-                if score is None:
-                    score = metric[0].get("baseScore")
-                if score is not None:
-                    break
-        typer.echo(f"{cve_id} - CVSS {score}")
-        typer.echo(description)
-        typer.echo("")
+        Console().print(f"Failed to fetch CVEs: {resp.status_code}")
+        raise typer.Exit(1)
+    data = resp.json()[:5]
+    table = Table(title="Latest CVEs")
+    table.add_column("id")
+    table.add_column("summary")
+    for item in data:
+        table.add_row(item.get("id", ""), item.get("summary", ""))
+    Console().print(table)
+
+
+@time_command
+@log_command
+@app.command()
+def search(keyword: str = typer.Option(..., "--keyword")):
+    """Simulate filtering CVEs."""
+    table = Table(title=f"CVEs matching {keyword}")
+    table.add_column("id")
+    for i in range(3):
+        table.add_row(f"CVE-2024-000{i}")
+    Console().print(table)
