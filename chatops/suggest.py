@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import numpy as np
 import openai
+from .openai_utils import ensure_api_key
 
 
 # Known CLI commands and a short description for embedding purposes
@@ -24,11 +25,9 @@ _COMMAND_EMBEDDINGS: List[Tuple[str, np.ndarray]] | None = None
 
 
 def _get_client() -> openai.OpenAI:
-    """Return an OpenAI client using the OPENAI_API_KEY environment variable."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY environment variable is not set")
-    return openai.OpenAI(api_key=api_key)
+    """Return an OpenAI client after ensuring an API key is available."""
+    ensure_api_key()
+    return openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 def _embed(text: str, client: openai.OpenAI) -> np.ndarray:
