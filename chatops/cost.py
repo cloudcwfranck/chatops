@@ -15,34 +15,28 @@ app.add_typer(report_app, name="report")
 def azure_cost(subscription_id: str = typer.Argument(..., help="Azure subscription ID")):
     """Show Azure cost by service for the current month."""
     try:
-        from azure.identity import (  # type: ignore
-            AzureCliCredential,
-            InteractiveBrowserCredential,
-            ChainedTokenCredential,
-        )
+        from azure.identity import DeviceCodeCredential  # type: ignore
+
         from azure.core.exceptions import ClientAuthenticationError  # type: ignore
         from azure.mgmt.costmanagement import CostManagementClient  # type: ignore
     except ImportError:
         typer.echo("Azure SDK packages are required for this command")
         raise typer.Exit(code=1)
-
-    cli_cred = AzureCliCredential()
-    browser_cred = InteractiveBrowserCredential()
-    chained = ChainedTokenCredential(cli_cred, browser_cred)
+    credential = DeviceCodeCredential()
     scope_url = "https://management.azure.com/.default"
 
     try:
-        chained.get_token(scope_url)
+        credential.get_token(scope_url)
+
     except ClientAuthenticationError as exc:
         typer.echo(f"Authentication failed: {exc}")
         raise typer.Exit(code=1)
 
-    if isinstance(chained._successful_credential, AzureCliCredential):
-        typer.echo("Authenticated using AzureCliCredential")
-    else:
-        typer.echo("Azure CLI credential failed; using InteractiveBrowserCredential")
 
-    client = CostManagementClient(chained)
+    typer.echo("Authenticated using device code flow")
+
+    client = CostManagementClient(credential)
+
     scope = f"/subscriptions/{subscription_id}"
 
     query = {
