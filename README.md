@@ -24,6 +24,9 @@ Invoke the CLI with the installed entry point:
 chatops --help
 ```
 
+The command was previously named `chatops-toolkit`. That legacy name remains
+available as an alias, but the recommended entry point is simply `chatops`.
+
 You can also run the package directly:
 
 ```bash
