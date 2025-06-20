@@ -74,13 +74,10 @@ import typer
 from rich.console import Console
 from .utils import log_command, time_command
 
-app = typer.Typer(help="AI powered helpers")
-
 
 @time_command
 @log_command
-@app.command()
-def suggest(prompt: str):
+def suggest(prompt: str) -> None:
     """Suggest best ChatOps command."""
     try:
         cmd = suggest_command(prompt)
@@ -92,8 +89,7 @@ def suggest(prompt: str):
 
 @time_command
 @log_command
-@app.command()
-def explain(text: str):
+def explain(text: str) -> None:
     """Use OpenAI to explain an error message."""
     try:
         client = _get_client()
@@ -102,3 +98,4 @@ def explain(text: str):
     except Exception as exc:
         Console().print(f"OpenAI error: {exc}")
         raise typer.Exit(1)
+

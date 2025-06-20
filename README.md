@@ -55,6 +55,7 @@ Both forms expose the same set of subcommands:
 - `deploy rollback APP ENV` &ndash; rollback to last release
 
 #### logs
+- `logs SERVICE` &ndash; show recent log lines for a service
 - `logs live SERVICE` &ndash; stream live log lines
 - `logs grep PATTERN` &ndash; search log entries
 - `logs tail SERVICE [--lines N]` &ndash; tail logs (default 50 lines)
@@ -86,8 +87,8 @@ Both forms expose the same set of subcommands:
 - `cve search --keyword TEXT` &ndash; search CVEs
 
 #### suggest
-- `suggest suggest PROMPT` &ndash; suggest best CLI command
-- `suggest explain TEXT` &ndash; explain an error message
+- `suggest PROMPT` &ndash; suggest best CLI command
+- `explain TEXT` &ndash; explain an error message
 
 #### explain
 - `explain explain TEXT` &ndash; explain a stack trace
@@ -98,7 +99,7 @@ Both forms expose the same set of subcommands:
 - `monitor latency [--threshold MS]` &ndash; simulate latency alert
 
 #### support
-- `support support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
+- `support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
 
 ### Example commands
 
@@ -111,31 +112,31 @@ chatops deploy deploy myapp prod
 Tail logs for a service:
 
 ```bash
-python -m chatops logs tail myservice --lines 20
+chatops logs myservice
 ```
 
 Generate an Azure cost report for a subscription:
 
 ```bash
-python -m chatops cost azure --subscription-id <SUBSCRIPTION_ID>
+chatops cost azure --subscription-id <SUBSCRIPTION_ID>
 ```
 
 Show on-call rotation:
 
 ```bash
-python -m chatops incident who
+chatops incident who
 ```
 
 Run a security scan:
 
 ```bash
-python -m chatops security scan .
+chatops security scan .
 ```
 
 Display high or critical CVEs published in the last week:
 
 ```bash
-python -m chatops cve latest
+chatops cve latest
 ```
 
 ### Suggest a CLI Command
