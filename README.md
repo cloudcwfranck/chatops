@@ -1,4 +1,4 @@
-# chatops-toolkit
+# chatops
 
 A command line toolkit for operations teams built with [Typer](https://typer.tiangolo.com/).
 
@@ -10,12 +10,18 @@ Install from PyPI:
 pip install chatops
 ```
 
+For local development from a cloned repository:
+
+```bash
+pip install -e .
+```
+
 ## Usage
 
 Invoke the CLI with the installed entry point:
 
 ```bash
-chatops-toolkit --help
+chatops --help
 ```
 
 You can also run the package directly:
@@ -96,7 +102,7 @@ Both forms expose the same set of subcommands:
 Deploy an application (requires `GITHUB_TOKEN` and `GITHUB_REPOSITORY`):
 
 ```bash
-chatops-toolkit deploy deploy myapp prod
+chatops deploy deploy myapp prod
 ```
 
 Tail logs for a service:
