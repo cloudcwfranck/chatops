@@ -5,6 +5,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from .utils import log_command, time_command
+from . import env as env_mod
 
 app = typer.Typer(help="Cloud provider utilities")
 
@@ -12,9 +13,18 @@ app = typer.Typer(help="Cloud provider utilities")
 @app.command()
 @time_command
 @log_command
-def whoami(provider: str = typer.Option("aws", "--provider", help="aws|azure|gcp")):
+def whoami(
+    ctx: typer.Context,
+    provider: str = typer.Option(None, "--provider", help="aws|azure|gcp"),
+):
     """Show identity information for the given cloud provider."""
     console = Console()
+    if provider is None:
+        env_cfg = env_mod.get_env(ctx.obj.get("env_override"))
+        if not env_cfg:
+            console.print("[red]No active environment[/red]")
+            raise typer.Exit(1)
+        provider = env_cfg.get("provider")
     if provider == "aws":
         key = os.environ.get("AWS_ACCESS_KEY_ID")
         if key:
@@ -44,8 +54,17 @@ app.add_typer(cost_app, name="cost")
 @cost_app.command("top-services")
 @time_command
 @log_command
-def top_services(provider: str = typer.Option("aws", "--provider", help="aws|azure|gcp")):
+def top_services(
+    ctx: typer.Context,
+    provider: str = typer.Option(None, "--provider", help="aws|azure|gcp"),
+):
     """Show top services by cost."""
+    if provider is None:
+        env_cfg = env_mod.get_env(ctx.obj.get("env_override"))
+        if not env_cfg:
+            Console().print("[red]No active environment[/red]")
+            raise typer.Exit(1)
+        provider = env_cfg.get("provider")
     table = Table(title="Top Services")
     table.add_column("Service")
     table.add_column("Cost", justify="right")
@@ -58,9 +77,17 @@ def top_services(provider: str = typer.Option("aws", "--provider", help="aws|azu
 @time_command
 @log_command
 def deploy(
+    ctx: typer.Context,
     service: str = typer.Option(..., "--service", help="Service name"),
     region: str = typer.Option("us-east-1", "--region", help="Target region"),
-    provider: str = typer.Option("aws", "--provider", help="aws|azure|gcp"),
+    provider: str = typer.Option(None, "--provider", help="aws|azure|gcp"),
 ):
     """Simulate deploying a cloud service."""
+    if provider is None:
+        env_cfg = env_mod.get_env(ctx.obj.get("env_override"))
+        if not env_cfg:
+            Console().print("[red]No active environment[/red]")
+            raise typer.Exit(1)
+        provider = env_cfg.get("provider")
     Console().print(f"Deploying {service} to {provider} in {region}...")
+

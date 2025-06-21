@@ -29,6 +29,7 @@ from . import (
     insight,
     audit,
     feedback,
+    env,
     cloud,
     git,
     docker,
@@ -36,6 +37,12 @@ from . import (
 )
 
 app = typer.Typer(help="ChatOps CLI")
+
+
+@app.callback(invoke_without_command=False)
+def main(ctx: typer.Context, env_name: str = typer.Option(None, "--env", help="Environment override")):
+    """Store env override in context."""
+    ctx.obj = {"env_override": env_name}
 
 app.add_typer(deploy.app, name="deploy")
 app.add_typer(logs.app, name="logs")
@@ -62,6 +69,7 @@ app.add_typer(metrics.app, name="metrics")
 app.add_typer(insight.app, name="insight")
 app.add_typer(audit.app, name="audit")
 app.add_typer(feedback.app, name="feedback")
+app.add_typer(env.app, name="env")
 app.add_typer(cloud.app, name="cloud")
 app.add_typer(git.app, name="git")
 app.add_typer(docker.app, name="docker")
