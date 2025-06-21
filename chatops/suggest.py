@@ -1,9 +1,14 @@
 import os
+from pathlib import Path
 from typing import List, Tuple
 
 import numpy as np
 import openai
+from datetime import datetime
 from .openai_utils import ensure_api_key
+from . import history
+import typer
+from rich.console import Console
 
 
 # Known CLI commands and a short description for embedding purposes
@@ -22,6 +27,8 @@ _COMMANDS: List[Tuple[str, str]] = [
 
 # Cache for command embeddings
 _COMMAND_EMBEDDINGS: List[Tuple[str, np.ndarray]] | None = None
+
+app = typer.Typer(help="AI helper commands")
 
 
 def _get_client() -> openai.OpenAI:
@@ -64,7 +71,18 @@ def suggest_command(user_query: str) -> str:
         The closest matching CLI command string.
     """
     client = _get_client()
-    query_emb = _embed(user_query, client)
+    files_context = []
+    for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
+        p = Path.cwd() / name
+        if p.exists():
+            try:
+                files_context.append(p.read_text()[:500])
+            except Exception:
+                pass
+    hist = history.recent(6)
+    hist_text = "\n".join(item.get("content", "") for item in hist if item.get("role") == "user")
+    query_text = user_query + "\n" + "\n".join(files_context) + "\n" + hist_text
+    query_emb = _embed(query_text, client)
     commands = _load_command_embeddings(client)
 
     best_cmd = max(commands, key=lambda pair: _cosine_similarity(query_emb, pair[1]))
@@ -90,12 +108,14 @@ def main(ctx: typer.Context, prompt: str = typer.Argument(None, help="Prompt")):
 @app.command()
 def suggest(prompt: str = typer.Argument(..., help="Prompt to analyze")):
     """Suggest best ChatOps command."""
+    history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "user", "content": prompt})
     try:
         cmd = suggest_command(prompt)
     except Exception as exc:
         Console().print(f"Error: {exc}")
         raise typer.Exit(1)
     Console().print(cmd)
+    history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "assistant", "content": cmd})
 
 
 @time_command

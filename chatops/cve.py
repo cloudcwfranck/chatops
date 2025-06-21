@@ -40,3 +40,25 @@ def search(keyword: str = typer.Option(..., "--keyword", help="Search keyword"))
     for i in range(3):
         table.add_row(f"CVE-2024-000{i}")
     Console().print(table)
+
+
+@time_command
+@log_command
+@app.command("check")
+def check(package: str = typer.Argument(..., help="Package name")):
+    """Fetch CVEs for the given package."""
+    url = f"https://cve.circl.lu/api/search/{package}"
+    try:
+        resp = requests.get(url, timeout=10)
+    except Exception as exc:
+        Console().print(f"Request failed: {exc}")
+        raise typer.Exit(1)
+    if resp.status_code != 200:
+        Console().print(f"Failed to fetch CVEs: {resp.status_code}")
+        raise typer.Exit(1)
+    data = resp.json().get("data", [])[:3]
+    table = Table(title=f"CVEs for {package}")
+    table.add_column("id")
+    for item in data:
+        table.add_row(item.get("id", ""))
+    Console().print(table)

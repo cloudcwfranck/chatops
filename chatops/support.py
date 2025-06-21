@@ -2,8 +2,11 @@ from __future__ import annotations
 import typer
 from rich.console import Console
 from rich.markdown import Markdown
+from pathlib import Path
+from datetime import datetime
 from .utils import log_command, time_command
 from .openai_utils import openai_client
+from . import history
 
 try:
     import openai
@@ -40,6 +43,20 @@ def support() -> None:
         {"role": "system", "content": "You are a helpful DevOps and cloud assistant"}
     ]
 
+    for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
+        path = Path.cwd() / name
+        if path.exists():
+            try:
+                content = path.read_text()[:1000]
+                messages.append({"role": "system", "content": f"{name} contents:\n{content}"})
+            except Exception:
+                pass
+
+    hist = history.recent(6)
+    for item in hist:
+        if item.get("role") in {"user", "assistant"}:
+            messages.append({"role": item["role"], "content": item["content"]})
+
     while True:
         try:
             user_input = console.input("[bold blue]support> [/bold blue]")
@@ -48,6 +65,7 @@ def support() -> None:
         if user_input.strip().lower() in {"exit", "quit"}:
             break
         messages.append({"role": "user", "content": user_input})
+        history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "user", "content": user_input})
         try:
             resp = client.chat.completions.create(
                 model="gpt-4",
@@ -68,6 +86,7 @@ def support() -> None:
                 reply = resp.choices[0].message.content
                 console.print(Markdown(reply))
             messages.append({"role": "assistant", "content": reply})
+            history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "assistant", "content": reply})
         except Exception as exc:
             console.print(f"[red]Error: {exc}[/red]")
     console.print("[green]Goodbye![/green]")

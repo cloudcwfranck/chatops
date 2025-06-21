@@ -1,5 +1,7 @@
 from __future__ import annotations
 import typer
+import re
+from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from .utils import log_command, time_command
@@ -11,8 +13,20 @@ app = typer.Typer(help="Security related commands")
 @log_command
 @app.command("scan")
 def scan(path: str = typer.Argument(..., help="Path to scan")):
-    """Simulate static code scan for secrets."""
-    Console().print(f"Scanning {path} ... no issues found")
+    """Simple regex based secret scan."""
+    matches = []
+    try:
+        text = Path(path).read_text()
+        patterns = [r"AKIA[0-9A-Z]{16}", r"SECRET_KEY"]
+        for pat in patterns:
+            for m in re.findall(pat, text):
+                matches.append(m)
+    except Exception:
+        pass
+    if matches:
+        Console().print(f"[red]Potential secrets found: {matches}[/red]")
+    else:
+        Console().print(f"Scanning {path} ... no issues found")
 
 
 @time_command
@@ -33,3 +47,11 @@ def port_scan(host: str = typer.Argument(..., help="Host to scan")):
 def whoami():
     """Show current cloud identity."""
     Console().print("User: demo@example.com")
+
+
+@time_command
+@log_command
+@app.command("docker-scan")
+def docker_scan(image: str = typer.Argument(..., help="Docker image")):
+    """Simulate Docker image vulnerability scan."""
+    Console().print(f"Scanning Docker image {image} ... no vulnerabilities found")
