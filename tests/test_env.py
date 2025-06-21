@@ -43,7 +43,7 @@ def test_gcp_provider_validation(tmp_path, monkeypatch):
     cfg.mkdir()
     cfg_file = cfg / "config.yaml"
     cfg_file.write_text(
-        "environments:\n  gcp-test:\n    provider: gcp\n"
+        "environments:\n  gcp-test:\n    provider: gcp\n    project_id: prj\n"
     )
     monkeypatch.setattr(config, "CONFIG_FILE", cfg_file)
     # Should not raise
@@ -56,7 +56,7 @@ def test_env_use_creates_sandbox(tmp_path, monkeypatch):
     cfg.mkdir()
     cfg_file = cfg / "config.yaml"
     cfg_file.write_text(
-        "environments:\n  gcp-test:\n    provider: gcp\n"
+        "environments:\n  gcp-test:\n    provider: gcp\n    project_id: prj\n"
     )
     monkeypatch.setattr(env_mod, "ACTIVE_FILE", cfg / ".active_env")
     monkeypatch.setattr(env_mod, "SANDBOX_DIR", cfg / "sandboxes")
@@ -80,7 +80,7 @@ def test_env_status(tmp_path, monkeypatch):
     )
     monkeypatch.setattr(env_mod, "ACTIVE_FILE", cfg / ".active_env")
     monkeypatch.setattr(config, "CONFIG_FILE", cfg_file)
-    (cfg / ".active_env").write_text("aws-prod")
+    (cfg / ".active_env").write_text("name: aws-prod")
     import chatops.providers.aws as aws_provider
     monkeypatch.setattr(aws_provider, "is_authenticated", lambda env: True)
     result = runner.invoke(app, ["env", "status"], env={"HOME": str(home)})
