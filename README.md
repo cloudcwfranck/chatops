@@ -84,8 +84,8 @@ Both forms expose the same set of subcommands. Each command is invoked with the
 A sample configuration file is bundled with the project at `config.yaml`.
 
 Copy or symlink this file to ``~/.chatops/config.yaml`` to get started. If the
-home directory file is missing, the CLI automatically falls back to the bundled
-sample. Then define environments in that file:
+home directory file is missing, the CLI automatically falls back to the
+repo-local sample. Then define environments in that file:
 
 ```yaml
 environments:
