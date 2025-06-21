@@ -117,6 +117,30 @@ Both forms expose the same set of subcommands:
 #### doctor
 - `doctor` &ndash; verify required tools are installed
 
+#### generate
+- `generate terraform RESOURCE` &ndash; create Terraform config
+- `generate dockerfile` &ndash; produce a Dockerfile
+- `generate github-actions` &ndash; create CI workflow
+
+#### agent
+- `agent run "if CPU > 80% -> scale"` &ndash; autonomous actions
+
+#### test
+- `test write --file app.py` &ndash; generate tests
+- `test run` &ndash; run all tests
+
+#### compliance
+- `compliance scan --profile cmmc` &ndash; simulate compliance checks
+
+#### metrics
+- `metrics latency --service api` &ndash; show latency metrics
+
+#### insight
+- `insight top-errors --window 1h` &ndash; recent log errors
+
+#### feedback
+- `feedback --last up` &ndash; rate previous response
+
 #### version
 - `version` &ndash; show CLI version
 

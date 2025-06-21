@@ -21,6 +21,14 @@ from . import (
     alias,
     config_cli,
     shell_cli,
+    generate,
+    agent,
+    testing_cli,
+    compliance,
+    metrics,
+    insight,
+    audit,
+    feedback,
     __version__,
 )
 
@@ -43,6 +51,14 @@ app.add_typer(history_cli.app, name="history")
 app.add_typer(alias.app, name="alias")
 app.add_typer(config_cli.app, name="config")
 app.add_typer(shell_cli.app, name="shell")
+app.add_typer(generate.app, name="generate")
+app.add_typer(agent.app, name="agent")
+app.add_typer(testing_cli.app, name="test")
+app.add_typer(compliance.app, name="compliance")
+app.add_typer(metrics.app, name="metrics")
+app.add_typer(insight.app, name="insight")
+app.add_typer(audit.app, name="audit")
+app.add_typer(feedback.app, name="feedback")
 
 
 def _load_plugins() -> None:
