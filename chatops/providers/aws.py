@@ -75,3 +75,17 @@ def prompt_and_authenticate(env: Dict) -> None:
     except Exception as exc:
         raise RuntimeError(f"AWS auth failed: {exc}")
     auth_cache.set(f"aws:{profile}", True)
+
+
+# Additional utility functions
+from typing import List, Tuple
+
+
+def cost_report(env: Dict) -> List[Tuple[str, float]]:
+    """Return dummy cost data."""
+    return [("ServiceA", 120.0), ("ServiceB", 80.0)]
+
+
+def tail_logs(env: Dict, service: str, lines: int) -> List[str]:
+    """Return dummy log lines for a service."""
+    return [f"{service} log {i}" for i in range(lines)]

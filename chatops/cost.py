@@ -3,12 +3,21 @@ from datetime import datetime, timedelta
 import csv
 import json
 from pathlib import Path
+import importlib
 import typer
 from rich.console import Console
 from rich.table import Table
 from .utils import log_command, time_command
+from . import env as env_mod
 
 app = typer.Typer(help="Cost management commands")
+
+
+def _provider_module(ctx: typer.Context):
+    """Return provider module for active environment."""
+    env_cfg = env_mod.load_env(ctx.obj.get("env_override"))
+    provider = env_cfg.get("provider")
+    return importlib.import_module(f".providers.{provider}", __package__)
 
 @time_command
 @log_command
@@ -100,13 +109,31 @@ def recommend_cleanup():
 @time_command
 @log_command
 @app.command("report")
-def report(to: str = typer.Option(None, "--to", help="Destination")):
-    """Simulate sending cost report."""
-    msg = "Cost report: total spend $1000"
-    if to == "slack":
-        Console().print(f"Sending to Slack: {msg}")
+def report(
+    ctx: typer.Context,
+    to: str = typer.Option(None, "--to", help="Destination"),
+):
+    """Show provider-specific cost report."""
+    try:
+        mod = _provider_module(ctx)
+    except RuntimeError as exc:
+        Console().print(f"[red]{exc}")
+        raise typer.Exit(1)
+    env_cfg = env_mod.load_env(ctx.obj.get("env_override"))
+    if hasattr(mod, "cost_report"):
+        rows = mod.cost_report(env_cfg)
+        table = Table(title=f"{env_cfg.get('provider')} Cost Report")
+        table.add_column("Service")
+        table.add_column("Cost", justify="right")
+        for service, cost in rows:
+            table.add_row(service, f"${cost:.2f}")
+        msg_obj = table
     else:
-        Console().print(msg)
+        msg_obj = "Cost report not available"
+    if to == "slack":
+        Console().print(f"Sending to Slack: {msg_obj}")
+    else:
+        Console().print(msg_obj)
 
 
 @time_command
