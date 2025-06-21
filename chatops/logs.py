@@ -6,7 +6,16 @@ from rich.table import Table
 from rich.live import Live
 from .utils import log_command, time_command
 
-app = typer.Typer(help="Logging related commands")
+app = typer.Typer(help="Logging related commands", invoke_without_command=True)
+
+
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context, service: str = typer.Argument(None, help="Service name")) -> None:
+    """Show logs for ``service`` when no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        if not service:
+            raise typer.BadParameter("SERVICE is required")
+        tail(service)
 
 
 @app.callback(invoke_without_command=True)
@@ -63,3 +72,4 @@ def tail(
     for i in range(lines):
         table.add_row(f"log line {i}")
     Console().print(table)
+

@@ -74,8 +74,6 @@ import typer
 from rich.console import Console
 from .utils import log_command, time_command
 
-app = typer.Typer(help="AI powered helpers")
-
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context, prompt: str = typer.Argument(None, help="Prompt")):
@@ -112,3 +110,4 @@ def explain(text: str = typer.Argument(..., help="Error message")):
     except Exception as exc:
         Console().print(f"OpenAI error: {exc}")
         raise typer.Exit(1)
+
