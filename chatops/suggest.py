@@ -1,9 +1,15 @@
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
-import numpy as np
-import openai
+try:
+    import numpy as np
+except Exception:  # pragma: no cover - optional dependency
+    np = None
+try:
+    import openai
+except Exception:  # pragma: no cover - optional dependency
+    openai = None
 from datetime import datetime
 from .openai_utils import ensure_api_key
 from . import history
@@ -26,24 +32,26 @@ _COMMANDS: List[Tuple[str, str]] = [
 ]
 
 # Cache for command embeddings
-_COMMAND_EMBEDDINGS: List[Tuple[str, np.ndarray]] | None = None
+_COMMAND_EMBEDDINGS: List[Tuple[str, Any]] | None = None
 
 app = typer.Typer(help="AI helper commands")
 
 
-def _get_client() -> openai.OpenAI:
+def _get_client() -> "openai.OpenAI":
     """Return an OpenAI client after ensuring an API key is available."""
+    if openai is None or np is None:
+        raise RuntimeError("openai and numpy packages are required")
     ensure_api_key()
     return openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
-def _embed(text: str, client: openai.OpenAI) -> np.ndarray:
+def _embed(text: str, client: "openai.OpenAI") -> Any:
     """Return the embedding vector for the given text."""
     response = client.embeddings.create(model="text-embedding-3-small", input=[text])
     return np.array(response.data[0].embedding, dtype=float)
 
 
-def _load_command_embeddings(client: openai.OpenAI) -> List[Tuple[str, np.ndarray]]:
+def _load_command_embeddings(client: "openai.OpenAI") -> List[Tuple[str, Any]]:
     """Compute and cache embeddings for known commands."""
     global _COMMAND_EMBEDDINGS
     if _COMMAND_EMBEDDINGS is None:
@@ -53,11 +61,11 @@ def _load_command_embeddings(client: openai.OpenAI) -> List[Tuple[str, np.ndarra
     return _COMMAND_EMBEDDINGS
 
 
-def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+def _cosine_similarity(a: Any, b: Any) -> float:
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
-def suggest_command(user_query: str) -> str:
+def suggest_command(user_query: str, with_context: bool = True) -> str:
     """Return the CLI command that best matches the plain English query.
 
     Parameters
@@ -72,15 +80,19 @@ def suggest_command(user_query: str) -> str:
     """
     client = _get_client()
     files_context = []
-    for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
-        p = Path.cwd() / name
-        if p.exists():
-            try:
-                files_context.append(p.read_text()[:500])
-            except Exception:
-                pass
-    hist = history.recent(6)
-    hist_text = "\n".join(item.get("content", "") for item in hist if item.get("role") == "user")
+    hist_text = ""
+    if with_context:
+        for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
+            p = Path.cwd() / name
+            if p.exists():
+                try:
+                    files_context.append(p.read_text()[:500])
+                except Exception:
+                    pass
+        hist = history.recent(6)
+        hist_text = "\n".join(
+            item.get("content", "") for item in hist if item.get("role") == "user"
+        )
     query_text = user_query + "\n" + "\n".join(files_context) + "\n" + hist_text
     query_emb = _embed(query_text, client)
     commands = _load_command_embeddings(client)
@@ -94,23 +106,30 @@ from .utils import log_command, time_command
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context, prompt: str = typer.Argument(None, help="Prompt")):
+def main(
+    ctx: typer.Context,
+    prompt: str = typer.Argument(None, help="Prompt"),
+    with_context: bool = typer.Option(False, "--with-context", help="Include file context"),
+):
     """Suggest a command when no subcommand is given."""
     if ctx.invoked_subcommand is None:
         if not prompt:
             typer.echo("Provide PROMPT or see --help")
             raise typer.Exit(1)
-        suggest(prompt)
+        suggest(prompt, with_context=with_context)
 
 
 @time_command
 @log_command
 @app.command()
-def suggest(prompt: str = typer.Argument(..., help="Prompt to analyze")):
+def suggest(
+    prompt: str = typer.Argument(..., help="Prompt to analyze"),
+    with_context: bool = typer.Option(False, "--with-context", help="Include file context"),
+):
     """Suggest best ChatOps command."""
     history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "user", "content": prompt})
     try:
-        cmd = suggest_command(prompt)
+        cmd = suggest_command(prompt, with_context=with_context)
     except Exception as exc:
         Console().print(f"Error: {exc}")
         raise typer.Exit(1)

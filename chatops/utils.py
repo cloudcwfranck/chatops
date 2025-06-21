@@ -3,10 +3,14 @@ from time import perf_counter
 import logging
 from datetime import datetime
 from click import get_current_context
+from pathlib import Path
 from . import history
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+USAGE_LOG = Path.home() / ".chatops" / "usage.log"
+
 
 def log_command(func):
     @wraps(func)
@@ -17,10 +21,14 @@ def log_command(func):
         except Exception:
             ctx = None
         cmd = ctx.command_path if ctx else func.__name__
-        history.add_entry({
-            "timestamp": datetime.utcnow().isoformat(),
-            "command": cmd,
-        })
+        timestamp = datetime.utcnow().isoformat()
+        history.add_entry({"timestamp": timestamp, "command": cmd})
+        try:
+            USAGE_LOG.parent.mkdir(parents=True, exist_ok=True)
+            with USAGE_LOG.open("a") as fh:
+                fh.write(f"{timestamp} {cmd}\n")
+        except Exception:  # pragma: no cover - logging errors
+            pass
         return func(*args, **kwargs)
     return wrapper
 

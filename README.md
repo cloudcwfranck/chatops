@@ -16,6 +16,12 @@ For local development from a cloned repository:
 pip install -e .
 ```
 
+Run tests with:
+
+```bash
+./test.sh
+```
+
 ### Developer setup
 
 ```bash
@@ -204,3 +210,16 @@ from chatops import suggest_command
 cmd = suggest_command("restart app on prod")
 print(cmd)
 ```
+
+### Plugins
+
+Custom commands can be added by dropping ``*.py`` files in ``~/.chatops/plugins``
+or ``.chatops/plugins`` within a project. Each plugin should expose a Typer
+``app`` object. The CLI loads them automatically at startup and reports any
+errors encountered during loading.
+
+### Contributing
+
+1. Fork the repository and create a virtual environment.
+2. Install in editable mode with ``pip install -e .``.
+3. Run ``./test.sh`` before submitting a pull request.

@@ -17,10 +17,10 @@ app = typer.Typer(help="Interactive support assistant")
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context):
+def main(ctx: typer.Context, with_context: bool = typer.Option(False, "--with-context", help="Include file context")):
     """Run interactive assistant when invoked directly."""
     if ctx.invoked_subcommand is None:
-        support()
+        support(with_context=with_context)
 
 
 def _client(console: Console | None = None) -> 'openai.OpenAI':
@@ -30,7 +30,10 @@ def _client(console: Console | None = None) -> 'openai.OpenAI':
 
 @time_command
 @log_command
-def support(share: bool = typer.Option(False, "--share", help="Export session as Markdown")) -> None:
+def support(
+    share: bool = typer.Option(False, "--share", help="Export session as Markdown"),
+    with_context: bool = False,
+) -> None:
     """Launch an interactive DevOps assistant."""
     console = Console()
     try:
@@ -44,14 +47,15 @@ def support(share: bool = typer.Option(False, "--share", help="Export session as
         {"role": "system", "content": "You are a helpful DevOps and cloud assistant"}
     ]
 
-    for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
-        path = Path.cwd() / name
-        if path.exists():
-            try:
-                content = path.read_text()[:1000]
-                messages.append({"role": "system", "content": f"{name} contents:\n{content}"})
-            except Exception:
-                pass
+    if with_context:
+        for name in ["Dockerfile", "main.tf", ".env", "pyproject.toml"]:
+            path = Path.cwd() / name
+            if path.exists():
+                try:
+                    content = path.read_text()[:1000]
+                    messages.append({"role": "system", "content": f"{name} contents:\n{content}"})
+                except Exception:
+                    pass
 
     hist = history.recent(6)
     for item in hist:

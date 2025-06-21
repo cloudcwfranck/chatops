@@ -62,17 +62,23 @@ app.add_typer(feedback.app, name="feedback")
 
 
 def _load_plugins() -> None:
-    plugin_dir = Path(".chatops/plugins")
-    if not plugin_dir.exists():
-        return
-    for path in plugin_dir.glob("*.py"):
-        spec = importlib.util.spec_from_file_location(path.stem, path)
-        if spec and spec.loader:
-            mod = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(mod)
-            plug_app = getattr(mod, "app", None)
-            if isinstance(plug_app, typer.Typer):
-                app.add_typer(plug_app, name=path.stem)
+    """Load plugins from user and project plugin directories."""
+    plugin_dirs = [Path.home() / ".chatops/plugins", Path(".chatops/plugins")]
+    console = Console()
+    for plugin_dir in plugin_dirs:
+        if not plugin_dir.exists():
+            continue
+        for path in plugin_dir.glob("*.py"):
+            try:
+                spec = importlib.util.spec_from_file_location(path.stem, path)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
+                    plug_app = getattr(mod, "app", None)
+                    if isinstance(plug_app, typer.Typer):
+                        app.add_typer(plug_app, name=path.stem)
+            except Exception as exc:  # pragma: no cover - plugin errors
+                console.print(f"[red]Failed to load plugin {path}: {exc}[/red]")
 
 
 _load_plugins()
