@@ -4,7 +4,10 @@ from typing import Any, Dict, Optional, List
 
 import yaml
 
-DEFAULT_CONFIG_FILE = Path(__file__).with_name("config.yaml")
+# Default config lives in the user's home directory. A bundled sample is used
+# as a fallback when the file doesn't exist.
+DEFAULT_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+SAMPLE_CONFIG_FILE = Path(__file__).with_name("config.yaml")
 
 # Lists of official regions per provider
 AZURE_REGIONS: List[str] = [
@@ -172,7 +175,10 @@ def load_config(
     if path is None:
         path = DEFAULT_CONFIG_FILE
     if not path.exists():
-        raise FileNotFoundError(f"Config file not found: {path}")
+        # Fall back to bundled sample so the CLI works out of the box
+        path = SAMPLE_CONFIG_FILE
+        if not path.exists():
+            raise FileNotFoundError(f"Config file not found: {DEFAULT_CONFIG_FILE}")
     with path.open("r", encoding="utf-8") as f:
         data: Dict[str, Any] = yaml.safe_load(f) or {}
 
