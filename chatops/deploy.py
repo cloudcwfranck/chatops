@@ -17,7 +17,10 @@ def _gh_headers(token: str) -> dict:
 @time_command
 @log_command
 @app.command()
-def deploy(app_name: str, env: str):
+def deploy(
+    app_name: str = typer.Argument(..., help="Application name"),
+    env: str = typer.Argument(..., help="Target environment"),
+):
     """Trigger a GitHub Actions deployment workflow."""
     token = os.environ.get("GITHUB_TOKEN")
     repo = os.environ.get("GITHUB_REPOSITORY")
@@ -60,7 +63,10 @@ def status():
 @time_command
 @log_command
 @app.command()
-def rollback(app_name: str, env: str):
+def rollback(
+    app_name: str = typer.Argument(..., help="Application name"),
+    env: str = typer.Argument(..., help="Target environment"),
+):
     """Simulate rolling back to previous release."""
     Console().print(f"Rolling back {app_name} on {env}...")
     time.sleep(1)

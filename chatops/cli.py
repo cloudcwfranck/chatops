@@ -1,5 +1,20 @@
 import typer
-from . import deploy, logs, cost, iam, incident, security, cve, suggest, monitor, explain, support
+from rich.console import Console
+from . import (
+    deploy,
+    logs,
+    cost,
+    iam,
+    incident,
+    security,
+    cve,
+    suggest,
+    monitor,
+    explain,
+    support,
+    doctor,
+    __version__,
+)
 
 app = typer.Typer(help="ChatOps CLI")
 
@@ -12,15 +27,11 @@ app.add_typer(security.app, name="security")
 app.add_typer(cve.app, name="cve")
 app.add_typer(explain.app, name="explain")
 app.add_typer(monitor.app, name="monitor")
+app.add_typer(support.app, name="support")
+app.add_typer(doctor.app, name="doctor")
 
 
-@app.command("suggest")
-def suggest_cmd(prompt: str) -> None:
-    """Suggest best ChatOps command."""
-    suggest.suggest(prompt)
-
-
-@app.command("support")
-def support_cmd() -> None:
-    """Launch the interactive support assistant."""
-    support.support()
+@app.command()
+def version():
+    """Show CLI version."""
+    Console().print(__version__)

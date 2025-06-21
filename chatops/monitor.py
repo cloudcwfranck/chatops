@@ -11,7 +11,7 @@ app = typer.Typer(help="Monitoring commands")
 @time_command
 @log_command
 @app.command("uptime")
-def uptime(url: str):
+def uptime(url: str = typer.Argument(..., help="URL to check")):
     """Perform HTTP health check and response time."""
     start = time.perf_counter()
     try:
@@ -27,7 +27,7 @@ def uptime(url: str):
 @time_command
 @log_command
 @app.command("latency")
-def latency(threshold: str = typer.Option("300ms", "--threshold")):
+def latency(threshold: str = typer.Option("300ms", "--threshold", help="Alert threshold")):
     """Simulate latency alert."""
     ms = int(threshold.rstrip("ms"))
     measured = 250

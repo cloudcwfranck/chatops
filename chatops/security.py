@@ -10,7 +10,7 @@ app = typer.Typer(help="Security related commands")
 @time_command
 @log_command
 @app.command("scan")
-def scan(path: str):
+def scan(path: str = typer.Argument(..., help="Path to scan")):
     """Simulate static code scan for secrets."""
     Console().print(f"Scanning {path} ... no issues found")
 
@@ -18,7 +18,7 @@ def scan(path: str):
 @time_command
 @log_command
 @app.command("port-scan")
-def port_scan(host: str):
+def port_scan(host: str = typer.Argument(..., help="Host to scan")):
     """Simulate open port scanning."""
     table = Table(title=f"Open ports on {host}")
     table.add_column("Port")
