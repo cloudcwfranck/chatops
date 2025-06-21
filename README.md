@@ -32,6 +32,15 @@ source .venv/bin/activate
 pip install -e .
 ```
 
+### Docker usage
+
+Build and run the CLI in a container:
+
+```bash
+docker build -t chatops .
+docker run --rm -v $PWD:/app chatops support --help
+```
+
 ## Usage
 
 Invoke the CLI with the installed entry point:
@@ -64,6 +73,9 @@ Both forms expose the same set of subcommands. Each command is invoked with the
 - `chatops monitor` &ndash; monitoring checks
 - `chatops support` &ndash; interactive assistant
 - `chatops doctor` &ndash; environment checks
+- `chatops cloud` &ndash; cloud platform helpers
+- `chatops git` &ndash; git workflow utilities
+- `chatops docker` &ndash; Docker commands
 - `chatops version` &ndash; show CLI version
 
 ### Command reference

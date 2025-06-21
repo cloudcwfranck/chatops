@@ -29,6 +29,9 @@ from . import (
     insight,
     audit,
     feedback,
+    cloud,
+    git,
+    docker,
     __version__,
 )
 
@@ -59,6 +62,9 @@ app.add_typer(metrics.app, name="metrics")
 app.add_typer(insight.app, name="insight")
 app.add_typer(audit.app, name="audit")
 app.add_typer(feedback.app, name="feedback")
+app.add_typer(cloud.app, name="cloud")
+app.add_typer(git.app, name="git")
+app.add_typer(docker.app, name="docker")
 
 
 def _load_plugins() -> None:

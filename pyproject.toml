@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "chatops"
-version = "0.5.1"
+version = "0.6.0"
 authors = [{name = "Franck Kengne"}]
 description = "Command line toolkit for operations teams"
 readme = "README.md"
@@ -14,6 +14,9 @@ dependencies = [
     "rich>=13",
     "requests>=2.31",
     "PyYAML>=6",
+    "openai>=1.0,<2",
+    "boto3>=1.28",
+    "docker>=6",
 ]
 
 [project.scripts]
