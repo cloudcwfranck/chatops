@@ -77,10 +77,20 @@ from .utils import log_command, time_command
 app = typer.Typer(help="AI powered helpers")
 
 
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context, prompt: str = typer.Argument(None, help="Prompt")):
+    """Suggest a command when no subcommand is given."""
+    if ctx.invoked_subcommand is None:
+        if not prompt:
+            typer.echo("Provide PROMPT or see --help")
+            raise typer.Exit(1)
+        suggest(prompt)
+
+
 @time_command
 @log_command
 @app.command()
-def suggest(prompt: str):
+def suggest(prompt: str = typer.Argument(..., help="Prompt to analyze")):
     """Suggest best ChatOps command."""
     try:
         cmd = suggest_command(prompt)
@@ -93,7 +103,7 @@ def suggest(prompt: str):
 @time_command
 @log_command
 @app.command()
-def explain(text: str):
+def explain(text: str = typer.Argument(..., help="Error message")):
     """Use OpenAI to explain an error message."""
     try:
         client = _get_client()

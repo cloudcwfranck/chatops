@@ -13,6 +13,13 @@ except Exception:  # pragma: no cover - optional dependency
 app = typer.Typer(help="Interactive support assistant")
 
 
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context):
+    """Run interactive assistant when invoked directly."""
+    if ctx.invoked_subcommand is None:
+        support()
+
+
 def _client(console: Console | None = None) -> 'openai.OpenAI':
     """Return an OpenAI client after ensuring an API key is available."""
     return openai_client(console)
@@ -47,10 +54,21 @@ def support():
                 model="gpt-4",
                 messages=messages,
                 temperature=0.2,
+                stream=True,
             )
-            reply = resp.choices[0].message.content
+            parts: list[str] = []
+            if hasattr(resp, "__iter__"):
+                for chunk in resp:
+                    delta = chunk.choices[0].delta.content
+                    if delta:
+                        console.print(delta, end="")
+                        parts.append(delta)
+                console.print()
+                reply = "".join(parts)
+            else:
+                reply = resp.choices[0].message.content
+                console.print(Markdown(reply))
             messages.append({"role": "assistant", "content": reply})
-            console.print(Markdown(reply))
         except Exception as exc:
             console.print(f"[red]Error: {exc}[/red]")
     console.print("[green]Goodbye![/green]")

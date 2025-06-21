@@ -9,10 +9,24 @@ from .utils import log_command, time_command
 app = typer.Typer(help="Logging related commands")
 
 
+@app.callback(invoke_without_command=True)
+def main(
+    ctx: typer.Context,
+    service: str = typer.Argument(None, help="Service to tail"),
+    lines: int = typer.Option(50, "--lines", help="Number of log lines"),
+):
+    """Tail logs when no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        if not service:
+            typer.echo("Provide SERVICE or see --help")
+            raise typer.Exit(1)
+        tail(service, lines)
+
+
 @time_command
 @log_command
 @app.command()
-def live(service: str):
+def live(service: str = typer.Argument(..., help="Service name")):
     """Simulate live logs for a service."""
     console = Console()
     with Live(refresh_per_second=4) as live:
@@ -25,7 +39,7 @@ def live(service: str):
 @time_command
 @log_command
 @app.command()
-def grep(pattern: str):
+def grep(pattern: str = typer.Argument(..., help="Text to search")):
     """Search mock logs."""
     logs = ["error starting service", "service ready", "warning: high memory"]
     matches = [l for l in logs if pattern in l]
@@ -39,7 +53,10 @@ def grep(pattern: str):
 @time_command
 @log_command
 @app.command()
-def tail(service: str, lines: int = typer.Option(50, "--lines")):
+def tail(
+    service: str = typer.Argument(..., help="Service name"),
+    lines: int = typer.Option(50, "--lines", help="Number of log lines"),
+):
     """Tail fake log output."""
     table = Table(title=f"{service} logs")
     table.add_column("Line")

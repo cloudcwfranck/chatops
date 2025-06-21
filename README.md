@@ -16,6 +16,16 @@ For local development from a cloned repository:
 pip install -e .
 ```
 
+### Developer setup
+
+```bash
+git clone https://github.com/example/chatops.git
+cd chatops
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
 ## Usage
 
 Invoke the CLI with the installed entry point:
@@ -46,6 +56,8 @@ Both forms expose the same set of subcommands:
 - `explain` &ndash; AI helpers
 - `monitor` &ndash; monitoring checks
 - `support` &ndash; interactive assistant
+- `doctor` &ndash; environment checks
+- `version` &ndash; show CLI version
 
 ### Command reference
 
@@ -86,7 +98,7 @@ Both forms expose the same set of subcommands:
 - `cve search --keyword TEXT` &ndash; search CVEs
 
 #### suggest
-- `suggest suggest PROMPT` &ndash; suggest best CLI command
+- `suggest PROMPT` &ndash; suggest best CLI command
 - `suggest explain TEXT` &ndash; explain an error message
 
 #### explain
@@ -98,7 +110,13 @@ Both forms expose the same set of subcommands:
 - `monitor latency [--threshold MS]` &ndash; simulate latency alert
 
 #### support
-- `support support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
+- `support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
+
+#### doctor
+- `doctor` &ndash; verify required tools are installed
+
+#### version
+- `version` &ndash; show CLI version
 
 ### Example commands
 

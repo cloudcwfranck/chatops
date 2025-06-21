@@ -12,7 +12,7 @@ app.add_typer(report_app, name="report")
 @time_command
 @log_command
 @app.command("ack")
-def ack(incident_id: str):
+def ack(incident_id: str = typer.Argument(..., help="Incident identifier")):
     """Acknowledge a fake incident."""
     Console().print(f"Incident {incident_id} acknowledged")
 
@@ -32,7 +32,7 @@ def who():
 @time_command
 @log_command
 @app.command("runbook")
-def runbook(topic: str):
+def runbook(topic: str = typer.Argument(..., help="Runbook topic")):
     """Print SOP for a topic."""
     Console().print(f"Runbook for {topic}: reboot server then retry")
 

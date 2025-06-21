@@ -23,7 +23,7 @@ def _client() -> 'openai.OpenAI':
 @time_command
 @log_command
 @app.command()
-def explain(text: str):
+def explain(text: str = typer.Argument(..., help="Traceback or error")):
     """Use OpenAI to explain a stack trace."""
     try:
         client = _client()
@@ -37,7 +37,7 @@ def explain(text: str):
 @time_command
 @log_command
 @app.command()
-def autofix(file: str):
+def autofix(file: str = typer.Argument(..., help="File to analyze")):
     """Suggest code improvements."""
     content = open(file).read()
     try:

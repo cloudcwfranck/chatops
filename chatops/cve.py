@@ -33,7 +33,7 @@ def latest():
 @time_command
 @log_command
 @app.command()
-def search(keyword: str = typer.Option(..., "--keyword")):
+def search(keyword: str = typer.Option(..., "--keyword", help="Search keyword")):
     """Simulate filtering CVEs."""
     table = Table(title=f"CVEs matching {keyword}")
     table.add_column("id")
