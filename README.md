@@ -49,106 +49,107 @@ You can also run the package directly:
 python -m chatops --help
 ```
 
-Both forms expose the same set of subcommands:
+Both forms expose the same set of subcommands. Each command is invoked with the
+`chatops` prefix:
 
-- `deploy` &ndash; deployment actions
-- `logs` &ndash; view recent logs
-- `cost` &ndash; cost management reports
-- `incident` &ndash; incident management
-- `security` &ndash; security utilities
-- `cve` &ndash; vulnerability information
-- `iam` &ndash; IAM utilities
-- `suggest` &ndash; AI helpers
-- `explain` &ndash; AI helpers
-- `monitor` &ndash; monitoring checks
-- `support` &ndash; interactive assistant
-- `doctor` &ndash; environment checks
-- `version` &ndash; show CLI version
+- `chatops deploy` &ndash; deployment actions
+- `chatops logs` &ndash; view recent logs
+- `chatops cost` &ndash; cost management reports
+- `chatops incident` &ndash; incident management
+- `chatops security` &ndash; security utilities
+- `chatops cve` &ndash; vulnerability information
+- `chatops iam` &ndash; IAM utilities
+- `chatops suggest` &ndash; AI helpers
+- `chatops explain` &ndash; AI helpers
+- `chatops monitor` &ndash; monitoring checks
+- `chatops support` &ndash; interactive assistant
+- `chatops doctor` &ndash; environment checks
+- `chatops version` &ndash; show CLI version
 
 ### Command reference
 
 #### deploy
-- `deploy deploy APP ENV` &ndash; trigger a GitHub Actions deployment workflow
-- `deploy status` &ndash; print deploy history
-- `deploy rollback APP ENV` &ndash; rollback to last release
+- `chatops deploy deploy APP ENV` &ndash; trigger a GitHub Actions deployment workflow
+- `chatops deploy status` &ndash; print deploy history
+- `chatops deploy rollback APP ENV` &ndash; rollback to last release
 
 #### logs
-- `logs SERVICE` &ndash; show recent log lines for a service
-- `logs live SERVICE` &ndash; stream live log lines
-- `logs grep PATTERN` &ndash; search log entries
-- `logs tail SERVICE [--lines N]` &ndash; tail logs (default 50 lines)
+- `chatops logs SERVICE` &ndash; show recent log lines for a service
+- `chatops logs live SERVICE` &ndash; stream live log lines
+- `chatops logs grep PATTERN` &ndash; search log entries
+- `chatops logs tail SERVICE [--lines N]` &ndash; tail logs (default 50 lines)
 
 #### cost
-- `cost azure --subscription-id ID` &ndash; show Azure cost by service
-- `cost forecast` &ndash; show forecasted monthly spend
-- `cost top-spenders` &ndash; top 5 services by spend
-- `cost export [--format csv|json]` &ndash; export cost data
+- `chatops cost azure --subscription-id ID` &ndash; show Azure cost by service
+- `chatops cost forecast` &ndash; show forecasted monthly spend
+- `chatops cost top-spenders` &ndash; top 5 services by spend
+- `chatops cost export [--format csv|json]` &ndash; export cost data
 
 #### iam
-- `iam list-admins` &ndash; list IAM admins
-- `iam check-expired` &ndash; find expired credentials
-- `iam audit` &ndash; show IAM misconfigurations
+- `chatops iam list-admins` &ndash; list IAM admins
+- `chatops iam check-expired` &ndash; find expired credentials
+- `chatops iam audit` &ndash; show IAM misconfigurations
 
 #### incident
-- `incident ack INCIDENT_ID` &ndash; acknowledge an incident
-- `incident who` &ndash; show on-call rotation
-- `incident runbook TOPIC` &ndash; print SOP for a topic
-- `incident report create` &ndash; generate postmortem template
+- `chatops incident ack INCIDENT_ID` &ndash; acknowledge an incident
+- `chatops incident who` &ndash; show on-call rotation
+- `chatops incident runbook TOPIC` &ndash; print SOP for a topic
+- `chatops incident report create` &ndash; generate postmortem template
 
 #### security
-- `security scan PATH` &ndash; scan for secrets
-- `security port-scan HOST` &ndash; scan open ports
-- `security whoami` &ndash; show cloud identity
+- `chatops security scan PATH` &ndash; scan for secrets
+- `chatops security port-scan HOST` &ndash; scan open ports
+- `chatops security whoami` &ndash; show cloud identity
 
 #### cve
-- `cve latest` &ndash; fetch recent CVEs
-- `cve search --keyword TEXT` &ndash; search CVEs
+- `chatops cve latest` &ndash; fetch recent CVEs
+- `chatops cve search --keyword TEXT` &ndash; search CVEs
 
 #### suggest
-- `suggest PROMPT` &ndash; suggest best CLI command
+- `chatops suggest PROMPT` &ndash; suggest best CLI command
 
-- `suggest explain TEXT` &ndash; explain an error message
+- `chatops suggest explain TEXT` &ndash; explain an error message
 
 #### explain
-- `explain explain TEXT` &ndash; explain a stack trace
-- `explain autofix FILE` &ndash; suggest code improvements
+- `chatops explain explain TEXT` &ndash; explain a stack trace
+- `chatops explain autofix FILE` &ndash; suggest code improvements
 
 #### monitor
-- `monitor uptime URL` &ndash; check service uptime
-- `monitor latency [--threshold MS]` &ndash; simulate latency alert
+- `chatops monitor uptime URL` &ndash; check service uptime
+- `chatops monitor latency [--threshold MS]` &ndash; simulate latency alert
 
 #### support
-- `support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
+- `chatops support` &ndash; launch interactive assistant (prompts for `OPENAI_API_KEY` if needed)
 
 #### doctor
-- `doctor` &ndash; verify required tools are installed
+- `chatops doctor` &ndash; verify required tools are installed
 
 #### generate
-- `generate terraform RESOURCE` &ndash; create Terraform config
-- `generate dockerfile` &ndash; produce a Dockerfile
-- `generate github-actions` &ndash; create CI workflow
+- `chatops generate terraform RESOURCE` &ndash; create Terraform config
+- `chatops generate dockerfile` &ndash; produce a Dockerfile
+- `chatops generate github-actions` &ndash; create CI workflow
 
 #### agent
-- `agent run "if CPU > 80% -> scale"` &ndash; autonomous actions
+- `chatops agent run "if CPU > 80% -> scale"` &ndash; autonomous actions
 
 #### test
-- `test write --file app.py` &ndash; generate tests
-- `test run` &ndash; run all tests
+- `chatops test write --file app.py` &ndash; generate tests
+- `chatops test run` &ndash; run all tests
 
 #### compliance
-- `compliance scan --profile cmmc` &ndash; simulate compliance checks
+- `chatops compliance scan --profile cmmc` &ndash; simulate compliance checks
 
 #### metrics
-- `metrics latency --service api` &ndash; show latency metrics
+- `chatops metrics latency --service api` &ndash; show latency metrics
 
 #### insight
-- `insight top-errors --window 1h` &ndash; recent log errors
+- `chatops insight top-errors --window 1h` &ndash; recent log errors
 
 #### feedback
-- `feedback --last up` &ndash; rate previous response
+- `chatops feedback --last up` &ndash; rate previous response
 
 #### version
-- `version` &ndash; show CLI version
+- `chatops version` &ndash; show CLI version
 
 ### Example commands
 
