@@ -58,6 +58,6 @@ def validate_env(name: str) -> None:
     if env is None:
         raise ValueError(f"Environment {name} not found in config")
     provider = env.get("provider")
-    if provider not in {"azure", "aws", "docker", "local"}:
+    if provider not in {"azure", "aws", "gcp", "docker", "local"}:
         raise ValueError(f"Invalid provider for {name}")
 

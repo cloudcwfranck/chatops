@@ -89,10 +89,14 @@ environments:
     provider: local
   aws-prod:
     provider: aws
+  gcp-prod:
+    provider: gcp
 ```
 
-Activate one with ``chatops env use NAME``. Commands that interact with cloud
-providers read the active environment unless overridden with ``--env NAME``.
+Activate one with ``chatops env use NAME``. Each activation creates a sandbox
+directory under ``~/.chatops/sandboxes/NAME`` used by commands that interact
+with the chosen provider. Commands read the active environment unless
+overridden with ``--env NAME``.
 
 ### Command reference
 
