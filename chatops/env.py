@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional, Dict
+import shutil
+
+
+SANDBOX_DIR = Path.home() / ".chatops" / "sandboxes"
 
 from rich.console import Console
 import typer
@@ -26,10 +30,25 @@ def active_env() -> Optional[Dict]:
     return None
 
 
+def _sandbox_path(name: str) -> Path:
+    return SANDBOX_DIR / name
+
+
+def _setup_sandbox(name: str) -> None:
+    path = _sandbox_path(name)
+    if path.exists():
+        shutil.rmtree(path)
+    path.mkdir(parents=True, exist_ok=True)
+    env_cfg = config.get_env(name) or {}
+    provider = env_cfg.get("provider", "unknown")
+    (path / "provider").write_text(provider)
+
+
 def set_active(name: str) -> None:
     config.validate_env(name)
     ACTIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
     ACTIVE_FILE.write_text(name)
+    _setup_sandbox(name)
 
 
 def clear_active() -> None:
@@ -75,6 +94,11 @@ def list_envs():
 @app.command("exit")
 def exit_env():
     """Deactivate current environment."""
+    name = _active_name()
     clear_active()
+    if name:
+        path = _sandbox_path(name)
+        if path.exists():
+            shutil.rmtree(path)
     Console().print("Environment cleared")
 
