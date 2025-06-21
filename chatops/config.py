@@ -8,7 +8,11 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     yaml = None  # type: ignore
 
-CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+USER_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+REPO_CONFIG_FILE = Path(__file__).resolve().parent.parent / "config.yaml"
+
+DEFAULT_CONFIG_FILE = USER_CONFIG_FILE if USER_CONFIG_FILE.exists() else REPO_CONFIG_FILE
+
 
 
 def _parse_simple(text: str) -> Dict:
