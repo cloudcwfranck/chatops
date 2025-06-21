@@ -30,7 +30,7 @@ def _client(console: Console | None = None) -> 'openai.OpenAI':
 
 @time_command
 @log_command
-def support() -> None:
+def support(share: bool = typer.Option(False, "--share", help="Export session as Markdown")) -> None:
     """Launch an interactive DevOps assistant."""
     console = Console()
     try:
@@ -39,6 +39,7 @@ def support() -> None:
         console.print(f"[red]{exc}[/red]")
         raise typer.Exit(1)
 
+    transcript: list[str] = []
     messages = [
         {"role": "system", "content": "You are a helpful DevOps and cloud assistant"}
     ]
@@ -65,6 +66,7 @@ def support() -> None:
         if user_input.strip().lower() in {"exit", "quit"}:
             break
         messages.append({"role": "user", "content": user_input})
+        transcript.append(f"**User:** {user_input}")
         history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "user", "content": user_input})
         try:
             resp = client.chat.completions.create(
@@ -86,8 +88,13 @@ def support() -> None:
                 reply = resp.choices[0].message.content
                 console.print(Markdown(reply))
             messages.append({"role": "assistant", "content": reply})
+            transcript.append(f"**Assistant:** {reply}")
             history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "assistant", "content": reply})
         except Exception as exc:
             console.print(f"[red]Error: {exc}[/red]")
+    if share:
+        md = "\n".join(transcript)
+        Path("support_session.md").write_text(md)
+        console.print("[cyan]Session saved to support_session.md[/cyan]")
     console.print("[green]Goodbye![/green]")
 

@@ -54,3 +54,15 @@ def openai_client(console: Optional[Console] = None) -> "openai.OpenAI":
     """Return an OpenAI client with a valid API key."""
     api_key = ensure_api_key(console)
     return openai.OpenAI(api_key=api_key)
+
+
+def stream_completion(client: "openai.OpenAI", prompt: str):
+    """Yield text chunks from OpenAI chat completion."""
+    resp = client.chat.completions.create(
+        model="gpt-4", messages=[{"role": "user", "content": prompt}], stream=True
+    )
+    if hasattr(resp, "__iter__"):
+        for chunk in resp:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                yield delta
