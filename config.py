@@ -6,8 +6,10 @@ import yaml
 
 # Default config lives in the user's home directory. A bundled sample is used
 # as a fallback when the file doesn't exist.
-DEFAULT_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
-SAMPLE_CONFIG_FILE = Path(__file__).with_name("config.yaml")
+USER_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+REPO_CONFIG_FILE = Path(__file__).resolve().parent.parent / "config.yaml"
+
+DEFAULT_CONFIG_FILE = USER_CONFIG_FILE if USER_CONFIG_FILE.exists() else REPO_CONFIG_FILE
 
 # Lists of official regions per provider
 AZURE_REGIONS: List[str] = [
