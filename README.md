@@ -160,6 +160,7 @@ overridden with ``--env NAME``.
 - `chatops env use NAME` &ndash; activate NAME
 - `chatops env current` &ndash; show the active environment
 - `chatops env list` &ndash; list configured environments
+- `chatops env status` &ndash; check auth for active environment
 - `chatops env exit` &ndash; deactivate the active environment
 
 #### generate

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import importlib
 
 from pathlib import Path
 from typing import Optional, Dict
@@ -77,10 +78,20 @@ def get_env(override: Optional[str] = None) -> Optional[Dict]:
     return active_env()
 
 
+def _provider_module(name: str):
+    return importlib.import_module(f".providers.{name}", __package__)
 @app.command("use")
 def use(name: str = typer.Argument(..., help="Environment name")):
     """Activate an environment."""
     try:
+        env_cfg = config.get_env(name)
+        if env_cfg is None:
+            raise ValueError(f"Environment {name} not found")
+        provider = env_cfg.get("provider")
+        if provider in {"aws", "azure", "gcp", "docker"}:
+            mod = _provider_module(provider)
+            if hasattr(mod, "prompt_and_authenticate"):
+                mod.prompt_and_authenticate(env_cfg)
         set_active(name)
     except Exception as exc:
         Console().print(f"[red]{exc}[/red]")
@@ -115,4 +126,24 @@ def exit_env():
         if path.exists():
             shutil.rmtree(path)
     Console().print("Environment cleared")
+@app.command("status")
+def status():
+    """Show authentication status for active environment."""
+    name = _active_name()
+    if not name:
+        Console().print("none")
+        raise typer.Exit(1)
+    env_cfg = config.get_env(name) or {}
+    provider = env_cfg.get("provider")
+    authed = False
+    if provider:
+        mod = _provider_module(provider)
+        if hasattr(mod, "is_authenticated"):
+            authed = mod.is_authenticated(env_cfg)
+    if authed:
+        Console().print(f"{name} authenticated")
+    else:
+        Console().print(f"[red]{name} not authenticated[/red]")
+
+
 
