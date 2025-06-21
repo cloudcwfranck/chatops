@@ -1,14 +1,21 @@
 from __future__ import annotations
 import importlib
 
+try:
+    import yaml
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    yaml = None  # type: ignore
+
 from pathlib import Path
 from typing import Optional, Dict
+from datetime import datetime
 import shutil
 
 
 SANDBOX_DIR = Path.home() / ".chatops" / "sandboxes"
 
 from rich.console import Console
+from rich.table import Table
 import typer
 
 from . import config
@@ -18,9 +25,30 @@ ACTIVE_FILE = Path.home() / ".chatops" / ".active_env"
 app = typer.Typer(help="Environment management")
 
 
+def _load_active() -> Optional[Dict]:
+    if not ACTIVE_FILE.exists():
+        return None
+    text = ACTIVE_FILE.read_text()
+    if yaml is None:
+        data: Dict[str, str] = {}
+        for line in text.splitlines():
+            if ":" in line:
+                k, v = line.split(":", 1)
+                data[k.strip()] = v.strip()
+        return data
+    try:
+        loaded = yaml.safe_load(text) or {}
+        if isinstance(loaded, dict):
+            return loaded
+    except Exception:
+        return None
+    return None
+
+
 def _active_name() -> Optional[str]:
-    if ACTIVE_FILE.exists():
-        return ACTIVE_FILE.read_text().strip() or None
+    data = _load_active()
+    if data:
+        return str(data.get("name")) if data.get("name") else None
     return None
 
 
@@ -47,8 +75,18 @@ def _setup_sandbox(name: str) -> None:
 
 def set_active(name: str) -> None:
     config.validate_env(name)
+    env_cfg = config.get_env(name) or {}
+    data = {
+        "provider": env_cfg.get("provider", "unknown"),
+        "name": name,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
     ACTIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    ACTIVE_FILE.write_text(name)
+    if yaml is None:
+        text = "\n".join(f"{k}: {v}" for k, v in data.items())
+        ACTIVE_FILE.write_text(text)
+    else:
+        ACTIVE_FILE.write_text(yaml.safe_dump(data))
     _setup_sandbox(name)
 
 
@@ -83,28 +121,46 @@ def _provider_module(name: str):
 @app.command("use")
 def use(name: str = typer.Argument(..., help="Environment name")):
     """Activate an environment."""
+    console = Console()
+    env_cfg = config.get_env(name)
+    if env_cfg is None:
+        console.print(
+            f"[red]Environment '{name}' not found in {config.CONFIG_FILE}[/red]"
+        )
+        raise typer.Exit(1)
+    provider = env_cfg.get("provider", "")
+    missing = []
+    if provider == "azure":
+        for key in ("subscription_id", "tenant_id"):
+            if not env_cfg.get(key):
+                missing.append(key)
+    elif provider == "gcp":
+        if not env_cfg.get("project_id"):
+            missing.append("project_id")
+    if missing:
+        console.print(
+            f"[red]Environment '{name}' missing required fields: {', '.join(missing)}[/red]"
+        )
+        raise typer.Exit(1)
     try:
-        env_cfg = config.get_env(name)
-        if env_cfg is None:
-            raise ValueError(f"Environment {name} not found")
-        provider = env_cfg.get("provider")
         if provider in {"aws", "azure", "gcp", "docker"}:
             mod = _provider_module(provider)
-            if hasattr(mod, "prompt_and_authenticate"):
-                mod.prompt_and_authenticate(env_cfg)
+            if hasattr(mod, "is_authenticated") and not mod.is_authenticated(env_cfg):
+                if hasattr(mod, "prompt_and_authenticate"):
+                    mod.prompt_and_authenticate(env_cfg)
         set_active(name)
     except Exception as exc:
-        Console().print(f"[red]{exc}[/red]")
+        console.print(f"[red]{exc}[/red]")
         raise typer.Exit(1)
-    Console().print(f"Using environment {name}")
+    console.print(f"Using environment {name}")
 
 
 @app.command("current")
 def current():
     """Show current active environment."""
-    name = _active_name()
-    if name:
-        Console().print(name)
+    data = _load_active()
+    if data and data.get("name"):
+        Console().print(data["name"])
     else:
         Console().print("none")
 
@@ -112,8 +168,17 @@ def current():
 @app.command("list")
 def list_envs():
     """List configured environments."""
-    for env in config.environments():
-        Console().print(env)
+    console = Console()
+    envs = config.environments()
+    if not envs:
+        console.print("No environments configured")
+        return
+    table = Table(title="Environments")
+    table.add_column("Name")
+    table.add_column("Provider")
+    for name, info in envs.items():
+        table.add_row(name, info.get("provider", ""))
+    console.print(table)
 
 
 @app.command("exit")
@@ -129,7 +194,8 @@ def exit_env():
 @app.command("status")
 def status():
     """Show authentication status for active environment."""
-    name = _active_name()
+    data = _load_active()
+    name = data.get("name") if data else None
     if not name:
         Console().print("none")
         raise typer.Exit(1)

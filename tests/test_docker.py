@@ -16,7 +16,7 @@ def test_docker_scan(monkeypatch, tmp_path):
     (cfg / "config.yaml").write_text(
         "environments:\n  docker-local:\n    provider: docker\n"
     )
-    (cfg / ".active_env").write_text("docker-local")
+    (cfg / ".active_env").write_text("name: docker-local")
     result = runner.invoke(app, ["docker", "scan", "--image", "app:latest"])
     assert result.exit_code == 0
     assert "no issues" in result.output
