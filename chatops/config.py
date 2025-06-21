@@ -8,27 +8,27 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     yaml = None  # type: ignore
 
-HOME_CONFIG_FILE = (Path.home() / ".chatops" / "config.yaml").expanduser()
+USER_CONFIG_FILE = (Path.home() / ".chatops" / "config.yaml").expanduser()
 
 
-def _bundled_config() -> Path:
-    """Return the bundled config shipped with the package."""
+def _repo_config() -> Path:
+    """Return the config bundled with the package or repo."""
     here = Path(__file__).resolve()
-    candidates = [here.with_name("config.yaml"), here.parent / "config.yaml"]
+    candidates = [here.parent.parent / "config.yaml", here.parent / "config.yaml"]
     for candidate in candidates:
         if candidate.exists():
             return candidate.resolve()
     return candidates[0].resolve()
 
 
-BUNDLED_CONFIG_FILE = _bundled_config()
+REPO_CONFIG_FILE = _repo_config()
 
-if HOME_CONFIG_FILE.exists():
-    DEFAULT_CONFIG_FILE = HOME_CONFIG_FILE.resolve()
-elif BUNDLED_CONFIG_FILE.exists():
-    DEFAULT_CONFIG_FILE = BUNDLED_CONFIG_FILE
+if USER_CONFIG_FILE.exists():
+    DEFAULT_CONFIG_FILE = USER_CONFIG_FILE.resolve()
+elif REPO_CONFIG_FILE.exists():
+    DEFAULT_CONFIG_FILE = REPO_CONFIG_FILE
 else:
-    DEFAULT_CONFIG_FILE = HOME_CONFIG_FILE.resolve()
+    DEFAULT_CONFIG_FILE = USER_CONFIG_FILE.resolve()
 
 # Backwards compatibility for existing callers
 CONFIG_FILE = DEFAULT_CONFIG_FILE
@@ -38,8 +38,8 @@ def load(path: Optional[Path] = None) -> Dict:
         path = CONFIG_FILE
     path = path.expanduser().resolve()
     if not path.exists():
-        if path == HOME_CONFIG_FILE and BUNDLED_CONFIG_FILE.exists():
-            path = BUNDLED_CONFIG_FILE
+        if path == USER_CONFIG_FILE and REPO_CONFIG_FILE.exists():
+            path = REPO_CONFIG_FILE
         else:
             return {}
     text = path.read_text()
