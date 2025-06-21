@@ -1,5 +1,10 @@
 from __future__ import annotations
-import yaml
+
+try:
+    import yaml
+except ModuleNotFoundError:  # pragma: no cover - optional dependency
+    yaml = None  # type: ignore
+
 from pathlib import Path
 import typer
 from rich.console import Console
@@ -11,7 +16,8 @@ app = typer.Typer(help="Configuration")
 
 
 def _load() -> dict:
-    if CONFIG_FILE.exists():
+    """Return parsed config data or an empty dict if unavailable."""
+    if CONFIG_FILE.exists() and yaml is not None:
         try:
             return yaml.safe_load(CONFIG_FILE.read_text()) or {}
         except Exception:
@@ -20,6 +26,9 @@ def _load() -> dict:
 
 
 def _save(data: dict) -> None:
+    if yaml is None:
+        Console().print("[yellow]PyYAML not installed - config not saved[/yellow]")
+        return
     CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_FILE.write_text(yaml.safe_dump(data))
 
