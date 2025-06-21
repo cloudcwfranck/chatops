@@ -11,14 +11,37 @@ except ModuleNotFoundError:  # pragma: no cover - optional dependency
 CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
 
 
+def _parse_simple(text: str) -> Dict:
+    """Very small YAML subset parser used when PyYAML is unavailable."""
+    data: Dict[str, Dict] = {}
+    current: Optional[str] = None
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if not line:
+            continue
+        if line == "environments:":
+            continue
+        if line.startswith("  ") and line.endswith(":"):
+            current = line.strip()[:-1]
+            data[current] = {}
+        elif current and ":" in line:
+            key, value = line.strip().split(":", 1)
+            data[current][key.strip()] = value.strip()
+    return {"environments": data}
+
+
 def load() -> Dict:
     """Load configuration data."""
-    if CONFIG_FILE.exists() and yaml is not None:
+    if not CONFIG_FILE.exists():
+        return {}
+    text = CONFIG_FILE.read_text()
+    if yaml is not None:
         try:
-            return yaml.safe_load(CONFIG_FILE.read_text()) or {}
+            return yaml.safe_load(text) or {}
         except Exception:
             return {}
-    return {}
+    # Fallback to extremely small parser for test environments without PyYAML
+    return _parse_simple(text)
 
 
 def environments() -> Dict[str, Dict]:
