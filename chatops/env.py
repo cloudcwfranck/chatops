@@ -56,6 +56,20 @@ def clear_active() -> None:
         ACTIVE_FILE.unlink()
 
 
+def load_env(override: Optional[str] = None) -> Dict:
+    """Return env config or raise if unavailable."""
+    env_cfg = get_env(override)
+    if env_cfg is None:
+        raise RuntimeError("No environment selected. Run `chatops env use <env>`." )
+    return env_cfg
+
+
+def provider(override: Optional[str] = None) -> str:
+    """Return provider name for active or overridden env."""
+    env_cfg = load_env(override)
+    return env_cfg.get("provider", "")
+
+
 def get_env(override: Optional[str] = None) -> Optional[Dict]:
     if override:
         config.validate_env(override)

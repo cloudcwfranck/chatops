@@ -6,6 +6,7 @@ from rich.console import Console
 from rich.table import Table
 from .utils import log_command, time_command
 from . import env as env_mod
+from .providers import aws, azure, gcp, docker
 
 app = typer.Typer(help="Cloud provider utilities")
 
@@ -19,30 +20,24 @@ def whoami(
 ):
     """Show identity information for the given cloud provider."""
     console = Console()
-    if provider is None:
-        env_cfg = env_mod.get_env(ctx.obj.get("env_override"))
-        if not env_cfg:
-            console.print("[red]No active environment[/red]")
-            raise typer.Exit(1)
+    env_cfg = env_mod.get_env(ctx.obj.get("env_override"))
+    if provider is None and env_cfg:
         provider = env_cfg.get("provider")
+    if provider is None:
+        console.print("[red]No active environment[/red]")
+        raise typer.Exit(1)
     if provider == "aws":
-        key = os.environ.get("AWS_ACCESS_KEY_ID")
-        if key:
-            console.print(f"AWS access key: {key}")
-        else:
-            console.print("[red]AWS credentials not found[/red]")
+        identity = aws.whoami(env_cfg or {})
+        console.print(identity)
     elif provider == "azure":
-        try:
-            result = subprocess.check_output(["az", "account", "show", "--query", "user.name", "-o", "tsv"], text=True)
-            console.print(f"Azure user: {result.strip()}")
-        except Exception:
-            console.print("[red]Azure CLI credentials not found[/red]")
+        identity = azure.whoami(env_cfg or {})
+        console.print(identity)
     elif provider == "gcp":
-        try:
-            result = subprocess.check_output(["gcloud", "config", "get-value", "account"], text=True)
-            console.print(f"GCP account: {result.strip()}")
-        except Exception:
-            console.print("[red]GCP credentials not found[/red]")
+        identity = gcp.whoami(env_cfg or {})
+        console.print(identity)
+    elif provider == "docker":
+        identity = docker.whoami(env_cfg or {})
+        console.print(identity)
     else:
         console.print("[red]Unknown provider[/red]")
 
