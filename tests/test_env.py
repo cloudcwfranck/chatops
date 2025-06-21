@@ -85,3 +85,24 @@ def test_env_status(tmp_path, monkeypatch):
     monkeypatch.setattr(aws_provider, "is_authenticated", lambda env: True)
     result = runner.invoke(app, ["env", "status"], env={"HOME": str(home)})
     assert "authenticated" in result.output
+
+
+def test_env_use_missing_config(tmp_path, monkeypatch):
+    home = tmp_path
+    monkeypatch.setattr(env_mod, "ACTIVE_FILE", home / ".chatops" / ".active_env")
+    monkeypatch.setattr(config, "CONFIG_FILE", home / ".chatops" / "config.yaml")
+    result = runner.invoke(app, ["env", "use", "foo"], env={"HOME": str(home)})
+    assert result.exit_code != 0
+    assert "config file" in result.output.lower()
+
+
+def test_env_use_env_not_found(tmp_path, monkeypatch):
+    home = tmp_path
+    (home / ".chatops").mkdir()
+    cfg = home / ".chatops" / "config.yaml"
+    cfg.write_text("environments:\n  aws:\n    provider: aws\n")
+    monkeypatch.setattr(env_mod, "ACTIVE_FILE", home / ".chatops" / ".active_env")
+    monkeypatch.setattr(config, "CONFIG_FILE", cfg)
+    result = runner.invoke(app, ["env", "use", "missing"], env={"HOME": str(home)})
+    assert result.exit_code != 0
+    assert "not found" in result.output.lower()

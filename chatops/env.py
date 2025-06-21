@@ -11,6 +11,17 @@ from typing import Optional, Dict
 from datetime import datetime
 import shutil
 
+def _pretty_path(path: Path) -> str:
+    """Return path string with home replaced by ~ for readability."""
+    try:
+        home = str(Path.home())
+        text = str(path)
+        if text.startswith(home):
+            return text.replace(home, "~", 1)
+        return text
+    except Exception:
+        return str(path)
+
 
 SANDBOX_DIR = Path.home() / ".chatops" / "sandboxes"
 
@@ -122,10 +133,14 @@ def _provider_module(name: str):
 def use(name: str = typer.Argument(..., help="Environment name")):
     """Activate an environment."""
     console = Console()
+    cfg_path = _pretty_path(config.CONFIG_FILE)
+    if not config.CONFIG_FILE.exists():
+        console.print(f"[red]Config file {cfg_path} not found[/red]")
+        raise typer.Exit(1)
     env_cfg = config.get_env(name)
     if env_cfg is None:
         console.print(
-            f"[red]Environment '{name}' not found in {config.CONFIG_FILE}[/red]"
+            f"[red]Environment '{name}' not found in {cfg_path}. Make sure the file exists and is readable[/red]"
         )
         raise typer.Exit(1)
     provider = env_cfg.get("provider", "")

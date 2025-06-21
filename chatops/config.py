@@ -56,7 +56,9 @@ def get_env(name: str) -> Optional[Dict]:
 def validate_env(name: str) -> None:
     env = get_env(name)
     if env is None:
-        raise ValueError(f"Environment {name} not found in config")
+        raise ValueError(
+            f"Environment '{name}' not found in {CONFIG_FILE}"
+        )
     provider = env.get("provider")
     if provider not in {"azure", "aws", "gcp", "docker", "local"}:
         raise ValueError(f"Invalid provider for {name}")
