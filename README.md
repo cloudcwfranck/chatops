@@ -81,7 +81,10 @@ Both forms expose the same set of subcommands. Each command is invoked with the
 
 ### Environment configuration
 
-Define environments in ``~/.chatops/config.yaml``:
+A sample configuration file is bundled with the project at `config.yaml`.
+Copy or symlink this file to ``~/.chatops/config.yaml`` to get started. If the
+home directory file is missing, the CLI automatically falls back to the bundled
+sample. Then define environments in that file:
 
 ```yaml
 environments:
