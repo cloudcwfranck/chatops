@@ -56,3 +56,17 @@ def prompt_and_authenticate(env: Dict) -> None:
     env["project_id"] = creds.project_id
     env["service_account"] = str(key_path)
 
+
+
+# Additional utility functions
+from typing import List, Tuple
+
+
+def cost_report(env: Dict) -> List[Tuple[str, float]]:
+    """Return dummy cost data."""
+    return [("Compute", 90.0), ("Storage", 40.0)]
+
+
+def tail_logs(env: Dict, service: str, lines: int) -> List[str]:
+    """Return dummy log lines for GCP services."""
+    return [f"{service} log {i}" for i in range(lines)]

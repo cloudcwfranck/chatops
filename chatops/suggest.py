@@ -12,7 +12,7 @@ except Exception:  # pragma: no cover - optional dependency
     openai = None
 from datetime import datetime
 from .openai_utils import ensure_api_key
-from . import history
+from . import history, env as env_mod
 import typer
 from rich.console import Console
 
@@ -116,17 +116,20 @@ def main(
         if not prompt:
             typer.echo("Provide PROMPT or see --help")
             raise typer.Exit(1)
-        suggest(prompt, with_context=with_context)
+        env_mod.load_env(ctx.obj.get("env_override"))
+        suggest(ctx, prompt, with_context=with_context)
 
 
 @time_command
 @log_command
 @app.command()
 def suggest(
+    ctx: typer.Context,
     prompt: str = typer.Argument(..., help="Prompt to analyze"),
     with_context: bool = typer.Option(False, "--with-context", help="Include file context"),
 ):
     """Suggest best ChatOps command."""
+    env_mod.load_env(ctx.obj.get("env_override"))
     history.add_entry({"timestamp": datetime.utcnow().isoformat(), "role": "user", "content": prompt})
     try:
         cmd = suggest_command(prompt, with_context=with_context)

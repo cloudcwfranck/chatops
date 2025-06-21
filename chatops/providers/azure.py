@@ -58,3 +58,17 @@ def prompt_and_authenticate(env: Dict) -> None:
         raise RuntimeError(f"Azure login failed: {exc}")
     auth_cache.set("azure", True)
 
+
+
+# Additional utility functions
+from typing import List, Tuple
+
+
+def cost_report(env: Dict) -> List[Tuple[str, float]]:
+    """Return dummy cost data."""
+    return [("Compute", 150.0), ("Storage", 60.0)]
+
+
+def tail_logs(env: Dict, service: str, lines: int) -> List[str]:
+    """Return dummy log lines for Azure services."""
+    return [f"{service} log {i}" for i in range(lines)]
