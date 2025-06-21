@@ -8,12 +8,41 @@ try:
 except ModuleNotFoundError:  # pragma: no cover - optional dependency
     yaml = None  # type: ignore
 
-USER_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
-REPO_CONFIG_FILE = Path(__file__).resolve().parent.parent / "config.yaml"
-
-DEFAULT_CONFIG_FILE = USER_CONFIG_FILE if USER_CONFIG_FILE.exists() else REPO_CONFIG_FILE
+HOME_CONFIG_FILE = (Path.home() / ".chatops" / "config.yaml").expanduser()
 
 
+def _bundled_config() -> Path:
+    """Return the bundled config shipped with the package."""
+    here = Path(__file__).resolve()
+    candidates = [here.with_name("config.yaml"), here.parent / "config.yaml"]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate.resolve()
+    return candidates[0].resolve()
+
+
+BUNDLED_CONFIG_FILE = _bundled_config()
+
+if HOME_CONFIG_FILE.exists():
+    DEFAULT_CONFIG_FILE = HOME_CONFIG_FILE.resolve()
+elif BUNDLED_CONFIG_FILE.exists():
+    DEFAULT_CONFIG_FILE = BUNDLED_CONFIG_FILE
+else:
+    DEFAULT_CONFIG_FILE = HOME_CONFIG_FILE.resolve()
+
+# Backwards compatibility for existing callers
+CONFIG_FILE = DEFAULT_CONFIG_FILE
+def load(path: Optional[Path] = None) -> Dict:
+    """Load configuration data, falling back to the bundled sample."""
+    if path is None:
+        path = CONFIG_FILE
+    path = path.expanduser().resolve()
+    if not path.exists():
+        if path == HOME_CONFIG_FILE and BUNDLED_CONFIG_FILE.exists():
+            path = BUNDLED_CONFIG_FILE
+        else:
+            return {}
+    text = path.read_text()
 
 def _parse_simple(text: str) -> Dict:
     """Very small YAML subset parser used when PyYAML is unavailable."""
