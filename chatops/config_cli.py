@@ -10,7 +10,10 @@ import typer
 from rich.console import Console
 from .utils import log_command, time_command
 
-CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+USER_CONFIG_FILE = Path.home() / ".chatops" / "config.yaml"
+REPO_CONFIG_FILE = Path(__file__).resolve().parent.parent / "config.yaml"
+
+DEFAULT_CONFIG_FILE = USER_CONFIG_FILE if USER_CONFIG_FILE.exists() else REPO_CONFIG_FILE
 
 app = typer.Typer(help="Configuration")
 
