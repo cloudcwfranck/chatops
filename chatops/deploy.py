@@ -54,6 +54,15 @@ def deploy(
 
 @time_command
 @log_command
+@app.command("trigger")
+def trigger(env: str = typer.Argument(..., help="Environment")):
+    """Trigger deployment for ``APP_NAME`` environment."""
+    app_name = os.environ.get("APP_NAME", "app")
+    deploy(app_name, env)
+
+
+@time_command
+@log_command
 @app.command()
 def status():
     """Print deploy history and last timestamp."""

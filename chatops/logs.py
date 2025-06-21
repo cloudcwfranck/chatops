@@ -10,21 +10,12 @@ app = typer.Typer(help="Logging related commands", invoke_without_command=True)
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context, service: str = typer.Argument(None, help="Service name")) -> None:
-    """Show logs for ``service`` when no subcommand is provided."""
-    if ctx.invoked_subcommand is None:
-        if not service:
-            raise typer.BadParameter("SERVICE is required")
-        tail(service)
-
-
-@app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
-    service: str = typer.Argument(None, help="Service to tail"),
+    service: str = typer.Argument(None, help="Service name"),
     lines: int = typer.Option(50, "--lines", help="Number of log lines"),
-):
-    """Tail logs when no subcommand is provided."""
+) -> None:
+    """Tail logs for ``service`` if no subcommand is specified."""
     if ctx.invoked_subcommand is None:
         if not service:
             typer.echo("Provide SERVICE or see --help")
