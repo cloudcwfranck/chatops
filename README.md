@@ -260,6 +260,8 @@ errors encountered during loading.
 
 ### Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide.
+
 1. Fork the repository and create a virtual environment.
 2. Install in editable mode with ``pip install -e .``.
 3. Run ``./test.sh`` before submitting a pull request.
