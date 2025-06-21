@@ -1,4 +1,6 @@
+import importlib.util
 import typer
+from pathlib import Path
 from rich.console import Console
 from . import (
     deploy,
@@ -13,6 +15,12 @@ from . import (
     explain,
     support,
     doctor,
+    pr,
+    changelog,
+    history_cli,
+    alias,
+    config_cli,
+    shell_cli,
     __version__,
 )
 
@@ -29,6 +37,29 @@ app.add_typer(explain.app, name="explain")
 app.add_typer(monitor.app, name="monitor")
 app.add_typer(support.app, name="support")
 app.add_typer(doctor.app, name="doctor")
+app.add_typer(pr.app, name="pr")
+app.add_typer(changelog.app, name="changelog")
+app.add_typer(history_cli.app, name="history")
+app.add_typer(alias.app, name="alias")
+app.add_typer(config_cli.app, name="config")
+app.add_typer(shell_cli.app, name="shell")
+
+
+def _load_plugins() -> None:
+    plugin_dir = Path(".chatops/plugins")
+    if not plugin_dir.exists():
+        return
+    for path in plugin_dir.glob("*.py"):
+        spec = importlib.util.spec_from_file_location(path.stem, path)
+        if spec and spec.loader:
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            plug_app = getattr(mod, "app", None)
+            if isinstance(plug_app, typer.Typer):
+                app.add_typer(plug_app, name=path.stem)
+
+
+_load_plugins()
 
 
 @app.command()

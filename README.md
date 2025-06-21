@@ -152,6 +152,18 @@ Run a security scan:
 chatops security scan .
 ```
 
+Show recent pull requests for a repo:
+
+```bash
+chatops pr status owner/repo
+```
+
+Display command history:
+
+```bash
+chatops history show
+```
+
 Display high or critical CVEs published in the last week:
 
 ```bash

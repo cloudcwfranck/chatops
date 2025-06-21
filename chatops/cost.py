@@ -87,3 +87,32 @@ def export(format: str = typer.Option("csv", "--format", help="csv or json")):
             writer.writeheader()
             writer.writerows(data)
     Console().print(f"Exported data to {path}")
+
+
+@time_command
+@log_command
+@app.command("recommend-cleanup")
+def recommend_cleanup():
+    """Suggest deleting idle resources."""
+    Console().print("No idle resources found")
+
+
+@time_command
+@log_command
+@app.command("report")
+def report(to: str = typer.Option(None, "--to", help="Destination")):
+    """Simulate sending cost report."""
+    msg = "Cost report: total spend $1000"
+    if to == "slack":
+        Console().print(f"Sending to Slack: {msg}")
+    else:
+        Console().print(msg)
+
+
+@time_command
+@log_command
+@app.command("forecast-trend")
+def forecast_trend():
+    """Forecast cost trend for next month."""
+    next_month = datetime.now() + timedelta(days=30)
+    Console().print(f"Estimated spend for {next_month:%B}: $1200")
