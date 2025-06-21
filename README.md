@@ -73,10 +73,26 @@ Both forms expose the same set of subcommands. Each command is invoked with the
 - `chatops monitor` &ndash; monitoring checks
 - `chatops support` &ndash; interactive assistant
 - `chatops doctor` &ndash; environment checks
+- `chatops env` &ndash; environment management
 - `chatops cloud` &ndash; cloud platform helpers
 - `chatops git` &ndash; git workflow utilities
 - `chatops docker` &ndash; Docker commands
 - `chatops version` &ndash; show CLI version
+
+### Environment configuration
+
+Define environments in ``~/.chatops/config.yaml``:
+
+```yaml
+environments:
+  local:
+    provider: local
+  aws-prod:
+    provider: aws
+```
+
+Activate one with ``chatops env use NAME``. Commands that interact with cloud
+providers read the active environment unless overridden with ``--env NAME``.
 
 ### Command reference
 
@@ -135,6 +151,12 @@ Both forms expose the same set of subcommands. Each command is invoked with the
 
 #### doctor
 - `chatops doctor` &ndash; verify required tools are installed
+
+#### env
+- `chatops env use NAME` &ndash; activate NAME
+- `chatops env current` &ndash; show the active environment
+- `chatops env list` &ndash; list configured environments
+- `chatops env exit` &ndash; deactivate the active environment
 
 #### generate
 - `chatops generate terraform RESOURCE` &ndash; create Terraform config
